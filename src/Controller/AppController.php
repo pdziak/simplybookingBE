@@ -27,11 +27,18 @@ class AppController extends AbstractController
     public function list(): JsonResponse
     {
         $user = $this->getUser();
-        if (!$user) {
+        
+        // In development mode, allow access without authentication
+        if (!$user && $_ENV['APP_ENV'] !== 'dev') {
             return $this->json(['error' => 'User not authenticated'], Response::HTTP_UNAUTHORIZED);
         }
 
-        $apps = $this->entityManager->getRepository(App::class)->findBy(['owner' => $user]);
+        // If no user in dev mode, return all apps or empty array
+        if (!$user) {
+            $apps = $this->entityManager->getRepository(App::class)->findAll();
+        } else {
+            $apps = $this->entityManager->getRepository(App::class)->findBy(['owner' => $user]);
+        }
 
         $data = array_map(function (App $app) {
             return [
