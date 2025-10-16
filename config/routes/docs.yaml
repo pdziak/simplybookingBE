@@ -1,0 +1,10 @@
+# Documentation routes (without /api prefix)
+docs:
+    path: /docs
+    controller: api_platform.action.documentation
+    methods: [GET]
+
+docs_json:
+    path: /docs.json
+    controller: api_platform.action.openapi
+    methods: [GET]

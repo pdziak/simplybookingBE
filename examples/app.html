@@ -1,0 +1,566 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>App API Examples</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .section {
+            margin-bottom: 30px;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            background-color: #fafafa;
+        }
+        .section h2 {
+            color: #555;
+            margin-top: 0;
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+            font-size: 14px;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        button:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+        .success {
+            background-color: #d4edda;
+            color: #155724;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+        .error {
+            background-color: #f8d7da;
+            color: #721c24;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+        .info {
+            background-color: #d1ecf1;
+            color: #0c5460;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+        pre {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            overflow-x: auto;
+            border: 1px solid #e9ecef;
+        }
+        input, textarea {
+            width: 100%;
+            padding: 8px;
+            margin: 5px 0;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        .status {
+            font-weight: bold;
+            margin: 10px 0;
+        }
+        .authenticated {
+            color: #28a745;
+        }
+        .not-authenticated {
+            color: #dc3545;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🚀 App API Examples</h1>
+        
+        <!-- Authentication Section -->
+        <div class="section">
+            <h2>🔐 Authentication</h2>
+            <div class="status" id="authStatus">Not authenticated</div>
+            
+            <div class="form-group">
+                <label for="email">Email:</label>
+                <input type="email" id="email" value="demo@example.com">
+            </div>
+            <div class="form-group">
+                <label for="password">Password:</label>
+                <input type="password" id="password" value="password123">
+            </div>
+            <button onclick="register()">Register</button>
+            <button onclick="login()">Login</button>
+            <button onclick="logout()">Logout</button>
+        </div>
+
+        <!-- Create App Section -->
+        <div class="section">
+            <h2>📱 Create App</h2>
+            <div class="form-group">
+                <label for="appTitle">Title (required):</label>
+                <input type="text" id="appTitle" value="My Awesome App">
+            </div>
+            <div class="form-group">
+                <label for="appSlug">Slug (required):</label>
+                <input type="text" id="appSlug" value="my-awesome-app">
+            </div>
+            <div class="form-group">
+                <label for="appCompany">Company Name (required):</label>
+                <input type="text" id="appCompany" value="Awesome Company Inc.">
+            </div>
+            <div class="form-group">
+                <label for="appEmail">Email (required):</label>
+                <input type="email" id="appEmail" value="contact@awesomecompany.com">
+            </div>
+            <div class="form-group">
+                <label for="appDescription">Description (optional):</label>
+                <textarea id="appDescription" rows="3">This is an amazing app that does incredible things!</textarea>
+            </div>
+            <div class="form-group">
+                <label for="appLogo">Logo URL (required):</label>
+                <input type="url" id="appLogo" value="https://example.com/logo.png">
+            </div>
+            <button onclick="createApp()">Create App</button>
+        </div>
+
+        <!-- App Management Section -->
+        <div class="section">
+            <h2>📋 App Management</h2>
+            <button onclick="getApps()">Get All Apps</button>
+            <button onclick="getAppById()">Get App by ID</button>
+            <button onclick="updateApp()">Update App</button>
+            <button onclick="deleteApp()">Delete App</button>
+            
+            <div class="form-group">
+                <label for="appId">App ID (for operations):</label>
+                <input type="text" id="appId" placeholder="Enter app ID">
+            </div>
+        </div>
+
+        <!-- Validation Examples Section -->
+        <div class="section">
+            <h2>🚫 Validation Examples</h2>
+            <button onclick="testMissingFields()">Test Missing Required Fields</button>
+            <button onclick="testInvalidEmail()">Test Invalid Email</button>
+            <button onclick="testInvalidSlug()">Test Invalid Slug</button>
+            <button onclick="testInvalidLogo()">Test Invalid Logo URL</button>
+        </div>
+
+        <!-- Results Section -->
+        <div class="section">
+            <h2>📊 Results</h2>
+            <div id="results"></div>
+        </div>
+    </div>
+
+    <script>
+        // Include the AppAPI class from app.js
+        class AppAPI {
+            constructor() {
+                this.token = null;
+                this.apiBaseUrl = 'http://localhost/api';
+                this.authEndpoint = `${this.apiBaseUrl}/auth`;
+            }
+
+            async authenticate(email, password) {
+                try {
+                    const response = await fetch(`${this.authEndpoint}/login`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({ email, password })
+                    });
+
+                    if (!response.ok) {
+                        throw new Error(`Authentication failed: ${response.status}`);
+                    }
+
+                    const data = await response.json();
+                    this.token = data.token;
+                    updateAuthStatus(true);
+                    showMessage('✅ Authentication successful', 'success');
+                    return this.token;
+                } catch (error) {
+                    showMessage('❌ Authentication failed: ' + error.message, 'error');
+                    throw error;
+                }
+            }
+
+            async register(email, password, firstName, lastName) {
+                try {
+                    const response = await fetch(`${this.authEndpoint}/register`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({ 
+                            email, 
+                            password, 
+                            firstName, 
+                            lastName 
+                        })
+                    });
+
+                    if (!response.ok) {
+                        const error = await response.json();
+                        throw new Error(`Registration failed: ${error.error || response.status}`);
+                    }
+
+                    showMessage('✅ User registered successfully', 'success');
+                    return await response.json();
+                } catch (error) {
+                    showMessage('❌ Registration failed: ' + error.message, 'error');
+                    throw error;
+                }
+            }
+
+            getAuthHeaders() {
+                if (!this.token) {
+                    throw new Error('Not authenticated. Please login first.');
+                }
+                return {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${this.token}`
+                };
+            }
+
+            async createApp(appData) {
+                try {
+                    const response = await fetch(`${this.apiBaseUrl}/apps`, {
+                        method: 'POST',
+                        headers: this.getAuthHeaders(),
+                        body: JSON.stringify(appData)
+                    });
+
+                    if (!response.ok) {
+                        const error = await response.json();
+                        throw new Error(`Failed to create app: ${error.message || response.status}`);
+                    }
+
+                    const app = await response.json();
+                    showMessage('✅ App created successfully', 'success');
+                    showResult(app);
+                    return app;
+                } catch (error) {
+                    showMessage('❌ Failed to create app: ' + error.message, 'error');
+                    throw error;
+                }
+            }
+
+            async getApps() {
+                try {
+                    const response = await fetch(`${this.apiBaseUrl}/apps`, {
+                        method: 'GET',
+                        headers: this.getAuthHeaders()
+                    });
+
+                    if (!response.ok) {
+                        throw new Error(`Failed to fetch apps: ${response.status}`);
+                    }
+
+                    const data = await response.json();
+                    showMessage('✅ Apps fetched successfully', 'success');
+                    showResult(data);
+                    return data;
+                } catch (error) {
+                    showMessage('❌ Failed to fetch apps: ' + error.message, 'error');
+                    throw error;
+                }
+            }
+
+            async getApp(id) {
+                try {
+                    const response = await fetch(`${this.apiBaseUrl}/apps/${id}`, {
+                        method: 'GET',
+                        headers: this.getAuthHeaders()
+                    });
+
+                    if (!response.ok) {
+                        throw new Error(`Failed to fetch app: ${response.status}`);
+                    }
+
+                    const app = await response.json();
+                    showMessage('✅ App fetched successfully', 'success');
+                    showResult(app);
+                    return app;
+                } catch (error) {
+                    showMessage('❌ Failed to fetch app: ' + error.message, 'error');
+                    throw error;
+                }
+            }
+
+            async updateApp(id, appData) {
+                try {
+                    const response = await fetch(`${this.apiBaseUrl}/apps/${id}`, {
+                        method: 'PUT',
+                        headers: this.getAuthHeaders(),
+                        body: JSON.stringify(appData)
+                    });
+
+                    if (!response.ok) {
+                        const error = await response.json();
+                        throw new Error(`Failed to update app: ${error.message || response.status}`);
+                    }
+
+                    const app = await response.json();
+                    showMessage('✅ App updated successfully', 'success');
+                    showResult(app);
+                    return app;
+                } catch (error) {
+                    showMessage('❌ Failed to update app: ' + error.message, 'error');
+                    throw error;
+                }
+            }
+
+            async deleteApp(id) {
+                try {
+                    const response = await fetch(`${this.apiBaseUrl}/apps/${id}`, {
+                        method: 'DELETE',
+                        headers: this.getAuthHeaders()
+                    });
+
+                    if (!response.ok) {
+                        throw new Error(`Failed to delete app: ${response.status}`);
+                    }
+
+                    showMessage('✅ App deleted successfully', 'success');
+                    return true;
+                } catch (error) {
+                    showMessage('❌ Failed to delete app: ' + error.message, 'error');
+                    throw error;
+                }
+            }
+        }
+
+        // Initialize API instance
+        const api = new AppAPI();
+
+        // Helper functions
+        function updateAuthStatus(authenticated) {
+            const status = document.getElementById('authStatus');
+            if (authenticated) {
+                status.textContent = '✅ Authenticated';
+                status.className = 'status authenticated';
+            } else {
+                status.textContent = '❌ Not authenticated';
+                status.className = 'status not-authenticated';
+            }
+        }
+
+        function showMessage(message, type) {
+            const results = document.getElementById('results');
+            const div = document.createElement('div');
+            div.className = type;
+            div.textContent = message;
+            results.appendChild(div);
+            results.scrollTop = results.scrollHeight;
+        }
+
+        function showResult(data) {
+            const results = document.getElementById('results');
+            const pre = document.createElement('pre');
+            pre.textContent = JSON.stringify(data, null, 2);
+            results.appendChild(pre);
+            results.scrollTop = results.scrollHeight;
+        }
+
+        // Event handlers
+        async function register() {
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            try {
+                await api.register(email, password, 'Demo', 'User');
+            } catch (error) {
+                // Error already shown by API class
+            }
+        }
+
+        async function login() {
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            try {
+                await api.authenticate(email, password);
+            } catch (error) {
+                // Error already shown by API class
+            }
+        }
+
+        function logout() {
+            api.token = null;
+            updateAuthStatus(false);
+            showMessage('👋 Logged out', 'info');
+        }
+
+        async function createApp() {
+            const appData = {
+                title: document.getElementById('appTitle').value,
+                slug: document.getElementById('appSlug').value,
+                companyName: document.getElementById('appCompany').value,
+                email: document.getElementById('appEmail').value,
+                description: document.getElementById('appDescription').value || null,
+                logo: document.getElementById('appLogo').value
+            };
+
+            try {
+                const app = await api.createApp(appData);
+                // Store the created app ID for other operations
+                document.getElementById('appId').value = app.id || 'ID not available';
+            } catch (error) {
+                // Error already shown by API class
+            }
+        }
+
+        async function getApps() {
+            try {
+                await api.getApps();
+            } catch (error) {
+                // Error already shown by API class
+            }
+        }
+
+        async function getAppById() {
+            const id = document.getElementById('appId').value;
+            if (!id) {
+                showMessage('❌ Please enter an App ID', 'error');
+                return;
+            }
+            try {
+                await api.getApp(id);
+            } catch (error) {
+                // Error already shown by API class
+            }
+        }
+
+        async function updateApp() {
+            const id = document.getElementById('appId').value;
+            if (!id) {
+                showMessage('❌ Please enter an App ID', 'error');
+                return;
+            }
+
+            const appData = {
+                title: document.getElementById('appTitle').value + ' (UPDATED)',
+                slug: document.getElementById('appSlug').value + '-updated',
+                companyName: document.getElementById('appCompany').value + ' (UPDATED)',
+                email: document.getElementById('appEmail').value,
+                description: (document.getElementById('appDescription').value || '') + ' (UPDATED)',
+                logo: document.getElementById('appLogo').value
+            };
+
+            try {
+                await api.updateApp(id, appData);
+            } catch (error) {
+                // Error already shown by API class
+            }
+        }
+
+        async function deleteApp() {
+            const id = document.getElementById('appId').value;
+            if (!id) {
+                showMessage('❌ Please enter an App ID', 'error');
+                return;
+            }
+            try {
+                await api.deleteApp(id);
+            } catch (error) {
+                // Error already shown by API class
+            }
+        }
+
+        // Validation test functions
+        async function testMissingFields() {
+            try {
+                await api.createApp({
+                    title: 'Incomplete App'
+                    // Missing required fields
+                });
+            } catch (error) {
+                showMessage('✅ Caught missing required fields error: ' + error.message, 'success');
+            }
+        }
+
+        async function testInvalidEmail() {
+            try {
+                await api.createApp({
+                    title: 'Invalid Email App',
+                    slug: 'invalid-email-app',
+                    companyName: 'Invalid Corp',
+                    email: 'not-an-email',
+                    logo: 'https://example.com/logo.png'
+                });
+            } catch (error) {
+                showMessage('✅ Caught invalid email error: ' + error.message, 'success');
+            }
+        }
+
+        async function testInvalidSlug() {
+            try {
+                await api.createApp({
+                    title: 'Invalid Slug App',
+                    slug: 'Invalid Slug!',
+                    companyName: 'Invalid Corp',
+                    email: 'test@example.com',
+                    logo: 'https://example.com/logo.png'
+                });
+            } catch (error) {
+                showMessage('✅ Caught invalid slug error: ' + error.message, 'success');
+            }
+        }
+
+        async function testInvalidLogo() {
+            try {
+                await api.createApp({
+                    title: 'Invalid Logo App',
+                    slug: 'invalid-logo-app',
+                    companyName: 'Invalid Corp',
+                    email: 'test@example.com',
+                    logo: 'not-a-url'
+                });
+            } catch (error) {
+                showMessage('✅ Caught invalid logo URL error: ' + error.message, 'success');
+            }
+        }
+
+        // Initialize
+        updateAuthStatus(false);
+        showMessage('🚀 App API Examples loaded. Please login to start using the API.', 'info');
+    </script>
+</body>
+</html>
