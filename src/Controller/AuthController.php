@@ -226,6 +226,8 @@ class AuthController extends AbstractController
             'login' => $user->getLogin(),
             'firstName' => $user->getFirstName(),
             'lastName' => $user->getLastName(),
+            'first_name' => $user->getFirstName(), // Snake case for compatibility
+            'last_name' => $user->getLastName(),   // Snake case for compatibility
             'roles' => $user->getRoles(),
             'emailVerified' => $user->isEmailVerified(),
             'emailVerifiedAt' => $user->getEmailVerifiedAt()?->format('Y-m-d H:i:s')
@@ -261,6 +263,9 @@ class AuthController extends AbstractController
             'email' => $user->getEmail(),
             'firstName' => $user->getFirstName(),
             'lastName' => $user->getLastName(),
+            'first_name' => $user->getFirstName(), // Snake case for compatibility
+            'last_name' => $user->getLastName(),   // Snake case for compatibility
+            'login' => $user->getLogin(),
             'roles' => $user->getRoles(),
             'emailVerified' => $user->isEmailVerified(),
             'emailVerifiedAt' => $user->getEmailVerifiedAt()?->format('Y-m-d H:i:s'),
@@ -300,6 +305,8 @@ class AuthController extends AbstractController
             'login' => $user->getLogin(),
             'firstName' => $user->getFirstName(),
             'lastName' => $user->getLastName(),
+            'first_name' => $user->getFirstName(), // Snake case for compatibility
+            'last_name' => $user->getLastName(),   // Snake case for compatibility
             'roles' => $user->getRoles(),
             'emailVerified' => $user->isEmailVerified(),
             'emailVerifiedAt' => $user->getEmailVerifiedAt()?->format('Y-m-d H:i:s')
@@ -382,6 +389,8 @@ class AuthController extends AbstractController
                 'login' => $user->getLogin(),
                 'firstName' => $user->getFirstName(),
                 'lastName' => $user->getLastName(),
+                'first_name' => $user->getFirstName(), // Snake case for compatibility
+                'last_name' => $user->getLastName(),   // Snake case for compatibility
                 'emailVerified' => $user->isEmailVerified(),
                 'emailVerifiedAt' => $user->getEmailVerifiedAt()->format('Y-m-d H:i:s')
             ]
@@ -502,8 +511,12 @@ class AuthController extends AbstractController
         }
 
         // Update user properties if provided
-        if (isset($data['name'])) {
-            $user->setFirstName($data['name']);
+        if (isset($data['firstName'])) {
+            $user->setFirstName($data['firstName']);
+        }
+
+        if (isset($data['lastName'])) {
+            $user->setLastName($data['lastName']);
         }
 
         if (isset($data['login'])) {
@@ -536,10 +549,12 @@ class AuthController extends AbstractController
         $userData = [
             'id' => $user->getId(),
             'email' => $user->getEmail(),
-            'name' => $user->getFirstName(), // Map firstName to name for frontend compatibility
+            'name' => $user->getFirstName(), // Map firstName to name for backward compatibility
             'login' => $user->getLogin(),
             'firstName' => $user->getFirstName(),
             'lastName' => $user->getLastName(),
+            'first_name' => $user->getFirstName(), // Snake case for compatibility
+            'last_name' => $user->getLastName(),   // Snake case for compatibility
             'roles' => $user->getRoles(),
             'emailVerified' => $user->isEmailVerified(),
             'emailVerifiedAt' => $user->getEmailVerifiedAt()?->format('Y-m-d H:i:s'),
