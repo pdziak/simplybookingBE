@@ -15,12 +15,12 @@ class Category
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column(type: 'integer')]
-    #[Groups(['category:read', 'product:read'])]
+    #[Groups(['category:read', 'product:read', 'app:read'])]
     private ?int $id = null;
 
     #[ORM\Column(type: 'string', length: 255)]
     #[Assert\NotBlank(message: 'Category name is required')]
-    #[Groups(['category:read', 'category:write', 'product:read'])]
+    #[Groups(['category:read', 'category:write', 'product:read', 'app:read'])]
     private string $categoryName;
 
     #[ORM\ManyToOne(targetEntity: App::class)]
@@ -29,11 +29,11 @@ class Category
     private App $app;
 
     #[ORM\Column(type: 'datetime_immutable')]
-    #[Groups(['category:read'])]
+    #[Groups(['category:read', 'app:read'])]
     private \DateTimeImmutable $createdAt;
 
     #[ORM\Column(type: 'datetime_immutable', nullable: true)]
-    #[Groups(['category:read'])]
+    #[Groups(['category:read', 'app:read'])]
     private ?\DateTimeImmutable $updatedAt = null;
 
     public function __construct()

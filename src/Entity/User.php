@@ -7,33 +7,31 @@ use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Serializer\Annotation\Groups;
-use ApiPlatform\Metadata\ApiResource;
 
 #[ORM\Entity]
 #[ORM\Table(name: 'users')]
-// #[ApiResource] - Temporarily disabled due to security interface conflicts
 class User implements UserInterface, PasswordAuthenticatedUserInterface
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column(type: 'integer')]
-    #[Groups(['user:read'])]
+    #[Groups(['user:read', 'app:read'])]
     private ?int $id = null;
 
     #[ORM\Column(type: 'string', length: 180, unique: true)]
     #[Assert\NotBlank]
     #[Assert\Email]
-    #[Groups(['user:read', 'user:write'])]
+    #[Groups(['user:read', 'user:write', 'app:read'])]
     private string $email;
 
     #[ORM\Column(type: 'string', length: 50, unique: true, nullable: true)]
     #[Assert\Length(min: 3, max: 50)]
     #[Assert\Regex(pattern: '/^[a-zA-Z0-9_]+$/', message: 'Login can only contain letters, numbers, and underscores')]
-    #[Groups(['user:read', 'user:write'])]
+    #[Groups(['user:read', 'user:write', 'app:read'])]
     private ?string $login = null;
 
     #[ORM\Column(type: 'json')]
-    #[Groups(['user:read', 'user:write'])]
+    #[Groups(['user:read', 'user:write', 'app:read'])]
     private array $roles = [];
 
     #[ORM\Column(type: 'string', nullable: true)]
@@ -44,11 +42,11 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     private ?string $googleId = null;
 
     #[ORM\Column(type: 'string', length: 255, nullable: true)]
-    #[Groups(['user:read', 'user:write'])]
+    #[Groups(['user:read', 'user:write', 'app:read'])]
     private ?string $firstName = null;
 
     #[ORM\Column(type: 'string', length: 255, nullable: true)]
-    #[Groups(['user:read', 'user:write'])]
+    #[Groups(['user:read', 'user:write', 'app:read'])]
     private ?string $lastName = null;
 
     #[ORM\Column(type: 'datetime_immutable')]
@@ -116,7 +114,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
      */
     public function getUserIdentifier(): string
     {
-        return $this->login ?? $this->email;
+        return $this->email;
     }
 
     /**

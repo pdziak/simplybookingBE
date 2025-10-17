@@ -45,6 +45,7 @@ security:
         - { path: ^/api/auth/simple-test, roles: PUBLIC_ACCESS }
         - { path: ^/api/health, roles: PUBLIC_ACCESS }
         - { path: ^/api/uploads, roles: PUBLIC_ACCESS }
+        - { path: ^/api/upload, roles: IS_AUTHENTICATED_FULLY }
         - { path: ^/dev, roles: PUBLIC_ACCESS }
         - { path: ^/api, roles: PUBLIC_ACCESS }
         # Custom API Platform replacement endpoints (without /api prefix)

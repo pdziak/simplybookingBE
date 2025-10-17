@@ -54,3 +54,4 @@
 /.env.backup
 /.env.local
 /.idea
+/public/uploads

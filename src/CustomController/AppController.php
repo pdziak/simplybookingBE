@@ -51,18 +51,51 @@ class AppController extends AbstractController
             return $response;
         }
 
+        $user = $this->getUser();
+        
+        if (!$user) {
+            return $this->json(['error' => 'Authentication required'], Response::HTTP_UNAUTHORIZED);
+        }
+
         $data = json_decode($request->getContent(), true);
         
-        $app = new App();
-        $app->setTitle($data['title'] ?? '');
-        $app->setSlug($data['slug'] ?? '');
-        $app->setCompanyName($data['companyName'] ?? '');
-        $app->setEmail($data['email'] ?? '');
-        $app->setDescription($data['description'] ?? '');
-        $app->setLogo($data['logo'] ?? '');
+        // Check if user already has an app with this slug
+        $existingApp = $this->entityManager->getRepository(App::class)
+            ->findOneBy(['slug' => $data['slug'] ?? '', 'owner' => $user]);
         
-        $this->entityManager->persist($app);
-        $this->entityManager->flush();
+        if ($existingApp) {
+            // Update existing app
+            $existingApp->setTitle($data['title'] ?? '');
+            $existingApp->setCompanyName($data['companyName'] ?? '');
+            $existingApp->setEmail($data['email'] ?? '');
+            $existingApp->setDescription($data['description'] ?? '');
+            $existingApp->setLogo($data['logo'] ?? '');
+            $existingApp->setUpdatedAt(new \DateTimeImmutable());
+            
+            $this->entityManager->flush();
+            $app = $existingApp;
+        } else {
+            // Check if slug is already taken by another user
+            $slugExists = $this->entityManager->getRepository(App::class)
+                ->findOneBy(['slug' => $data['slug'] ?? '']);
+            
+            if ($slugExists) {
+                return $this->json(['error' => 'This URL slug is already taken. Please choose a different one.'], Response::HTTP_CONFLICT);
+            }
+            
+            // Create new app
+            $app = new App();
+            $app->setTitle($data['title'] ?? '');
+            $app->setSlug($data['slug'] ?? '');
+            $app->setCompanyName($data['companyName'] ?? '');
+            $app->setEmail($data['email'] ?? '');
+            $app->setDescription($data['description'] ?? '');
+            $app->setLogo($data['logo'] ?? '');
+            $app->setOwner($user); // Set the owner (user) for the app
+            
+            $this->entityManager->persist($app);
+            $this->entityManager->flush();
+        }
         
         $jsonData = $this->serializer->serialize($app, 'json', [
             'groups' => ['app:read'],
