@@ -22,7 +22,7 @@ final class Version20250120000001 extends AbstractMigration
         // Create carts table
         $this->addSql('CREATE SEQUENCE carts_id_seq INCREMENT BY 1 MINVALUE 1 START 1');
         $this->addSql('CREATE TABLE carts (
-            id INT NOT NULL, 
+            id INT NOT NULL DEFAULT nextval(\'carts_id_seq\'), 
             user_id INT NOT NULL, 
             created_at TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL, 
             updated_at TIMESTAMP(0) WITHOUT TIME ZONE NOT NULL, 
@@ -34,7 +34,7 @@ final class Version20250120000001 extends AbstractMigration
         // Create cart_items table
         $this->addSql('CREATE SEQUENCE cart_items_id_seq INCREMENT BY 1 MINVALUE 1 START 1');
         $this->addSql('CREATE TABLE cart_items (
-            id INT NOT NULL, 
+            id INT NOT NULL DEFAULT nextval(\'cart_items_id_seq\'), 
             cart_id INT NOT NULL, 
             product_id INT NOT NULL, 
             quantity INT NOT NULL, 

@@ -1,13 +1,22 @@
 # PHP-FPM for API Platform 7.2 (Symfony 7.x) - PHP 8.4
 FROM php:8.4-fpm-alpine
 
-# System deps
-RUN apk add --no-cache     bash git unzip icu-dev libzip-dev oniguruma-dev     libpq-dev postgresql-client curl openssl
+# System deps (include phpize toolchain and headers needed to build pecl extensions)
+RUN apk add --no-cache \
+    $PHPIZE_DEPS \
+    bash git unzip curl openssl \
+    icu-dev libzip-dev oniguruma-dev \
+    postgresql-dev linux-headers
+
+# PECL: Redis extension
+RUN pecl install redis \
+    && docker-php-ext-enable redis
 
 # PHP extensions
-RUN docker-php-ext-configure intl  && docker-php-ext-install -j$(nproc)       intl opcache zip pdo pdo_pgsql
+RUN docker-php-ext-configure intl \
+ && docker-php-ext-install -j$(nproc) \
+      intl opcache zip pdo pdo_pgsql
 
-# Composer
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
 WORKDIR /var/www/html
