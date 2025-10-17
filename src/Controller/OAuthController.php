@@ -151,7 +151,7 @@ class OAuthController extends AbstractController
             ];
             
             // Get the frontend URL from environment or use default
-            $frontendUrl = $_ENV['FRONTEND_URL'] ?? 'http://localhost:3000';
+            $frontendUrl = $_ENV['APP_URL'] ?? 'https://benefitowo.pl';
             
             // Create the redirect URL with token and user data as URL parameters
             $redirectUrl = $frontendUrl . '/auth/google/callback?' . http_build_query([
@@ -169,7 +169,7 @@ class OAuthController extends AbstractController
             error_log('Stack trace: ' . $e->getTraceAsString());
             
             // Get the frontend URL from environment or use default
-            $frontendUrl = $_ENV['FRONTEND_URL'] ?? 'http://localhost:3000';
+            $frontendUrl = $_ENV['APP_URL'] ?? 'https://benefitowo.pl';
             
             // Redirect to frontend with error message
             $redirectUrl = $frontendUrl . '/auth/google/callback?' . http_build_query([
