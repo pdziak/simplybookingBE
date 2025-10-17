@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Controller;
+namespace App\UsersController;
 
 use App\DTO\UserRequest;
 use App\DTO\UserResponse;
@@ -372,5 +372,49 @@ class UserController extends AbstractController
         $this->entityManager->flush();
 
         return new JsonResponse(['message' => 'User deleted successfully'], Response::HTTP_OK);
+    }
+
+    #[Route('/apps/{appId}/users', name: 'get_app_users', methods: ['GET'])]
+    public function getAppUsers(int $appId): JsonResponse
+    {
+        // Check if user has admin role or is the app owner
+        $currentUser = $this->getUser();
+        if (!$currentUser) {
+            return new JsonResponse(['error' => 'Authentication required'], Response::HTTP_UNAUTHORIZED);
+        }
+
+        // Find the app
+        $app = $this->entityManager->getRepository(\App\Entity\App::class)->find($appId);
+        if (!$app) {
+            return new JsonResponse(['error' => 'App not found'], Response::HTTP_NOT_FOUND);
+        }
+
+        // Check if user is admin or app owner
+        $isAdmin = in_array('ROLE_ADMIN', $currentUser->getRoles());
+        $isAppOwner = $app->getOwner() === $currentUser;
+        
+        if (!$isAdmin && !$isAppOwner) {
+            return new JsonResponse(['error' => 'Access denied. Admin role or app ownership required.'], Response::HTTP_FORBIDDEN);
+        }
+
+        // Get all users assigned to this app
+        $assignedUsers = $app->getAssignedUsers();
+        
+        $userResponses = array_map(function (User $user) {
+            return [
+                'id' => $user->getId(),
+                'email' => $user->getEmail(),
+                'firstName' => $user->getFirstName(),
+                'lastName' => $user->getLastName(),
+                'login' => $user->getLogin(),
+                'roles' => $user->getRoles(),
+                'emailVerified' => $user->isEmailVerified(),
+                'emailVerifiedAt' => $user->getEmailVerifiedAt()?->format('Y-m-d H:i:s'),
+                'createdAt' => $user->getCreatedAt()->format('Y-m-d H:i:s'),
+                'updatedAt' => $user->getUpdatedAt()?->format('Y-m-d H:i:s')
+            ];
+        }, $assignedUsers->toArray());
+
+        return new JsonResponse($userResponses, Response::HTTP_OK);
     }
 }
