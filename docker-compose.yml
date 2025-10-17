@@ -26,6 +26,7 @@ services:
     environment:
       APP_ENV: dev
       DATABASE_URL: "postgresql://app:app@db:5432/app?serverVersion=16&charset=utf8"
+      APP_URL: "http://benefitowo.webdev:3000"
     volumes:
       - ./:/var/www/html:cached
     expose:

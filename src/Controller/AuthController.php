@@ -115,7 +115,6 @@ class AuthController extends AbstractController
         // Send verification email
         try {
             $this->emailVerificationService->sendVerificationEmail($user);
-            $this->entityManager->flush(); // Save the verification token
         } catch (\Exception $e) {
             // Log the error but don't fail registration
             // In production, you might want to use a proper logger
@@ -328,15 +327,43 @@ class AuthController extends AbstractController
             ->findOneBy(['emailVerificationToken' => $token]);
 
         if (!$user) {
+            // Check if there's a user with this token in the past (already verified)
+            // We'll search by email if the token looks like a valid format
+            if (strlen($token) === 64 && ctype_xdigit($token)) {
+                // This looks like a valid token format, but user might be already verified
+                // Let's provide a more helpful message
+                return new JsonResponse([
+                    'error' => 'This verification link has already been used or has expired. If you need to verify your email, please request a new verification email.',
+                    'code' => 'TOKEN_ALREADY_USED'
+                ], Response::HTTP_BAD_REQUEST);
+            }
+            
             return new JsonResponse([
                 'error' => 'Invalid verification token'
             ], Response::HTTP_BAD_REQUEST);
         }
 
+        // Check if user is already verified
+        if ($user->isEmailVerified()) {
+            return new JsonResponse([
+                'message' => 'Your email has already been verified! You can log in to your account.',
+                'user' => [
+                    'id' => $user->getId(),
+                    'email' => $user->getEmail(),
+                    'login' => $user->getLogin(),
+                    'firstName' => $user->getFirstName(),
+                    'lastName' => $user->getLastName(),
+                    'emailVerified' => $user->isEmailVerified(),
+                    'emailVerifiedAt' => $user->getEmailVerifiedAt()->format('Y-m-d H:i:s')
+                ]
+            ], Response::HTTP_OK);
+        }
+
         // Check if token is still valid
         if (!$user->isEmailVerificationTokenValid()) {
             return new JsonResponse([
-                'error' => 'Verification token has expired'
+                'error' => 'Verification token has expired. Please request a new verification email.',
+                'code' => 'TOKEN_EXPIRED'
             ], Response::HTTP_BAD_REQUEST);
         }
 

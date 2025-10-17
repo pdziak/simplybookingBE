@@ -42,3 +42,8 @@ services:
     App\Service\EmailVerificationService:
         arguments:
             $appUrl: '%env(APP_URL)%'
+    
+    # JWT Payload Handler
+    App\Security\JWTPayloadHandler:
+        tags:
+            - { name: kernel.event_listener, event: lexik_jwt_authentication.on_jwt_created }

@@ -3,6 +3,7 @@
 namespace App\Service;
 
 use App\Entity\User;
+use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Component\Mime\Email;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
@@ -14,7 +15,8 @@ class EmailVerificationService
         private MailerInterface $mailer,
         private UrlGeneratorInterface $urlGenerator,
         private Environment $twig,
-        private string $appUrl = 'http://localhost:8080'
+        private EntityManagerInterface $entityManager,
+        private string $appUrl
     ) {
     }
 
@@ -27,6 +29,10 @@ class EmailVerificationService
         // Store token in user entity
         $user->setEmailVerificationToken($token);
         $user->setEmailVerificationTokenExpiresAt($expiresAt);
+
+        // Persist the changes to ensure the token is saved
+        $this->entityManager->persist($user);
+        $this->entityManager->flush();
 
         // Generate verification URL - point to frontend verification page
         $verificationUrl = $this->appUrl . '/verify-email?token=' . $token;
