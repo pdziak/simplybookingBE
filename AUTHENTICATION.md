@@ -5,7 +5,7 @@ This API provides JWT-based authentication for the frontend application.
 ## Endpoints
 
 ### 1. Register User
-**POST** `/api/auth/register`
+**POST** `/auth/register`
 
 Register a new user account.
 
@@ -33,7 +33,7 @@ Register a new user account.
 ```
 
 ### 2. Login User
-**POST** `/api/auth/login`
+**POST** `/auth/login`
 
 Authenticate an existing user.
 
@@ -61,7 +61,7 @@ Authenticate an existing user.
 ```
 
 ### 3. Get Current User
-**GET** `/api/auth/me`
+**GET** `/auth/me`
 
 Get information about the currently authenticated user.
 
@@ -84,7 +84,7 @@ Authorization: Bearer <your-jwt-token>
 ```
 
 ### 4. Refresh Token
-**POST** `/api/auth/refresh`
+**POST** `/auth/refresh`
 
 Get a new JWT token using the current valid token.
 

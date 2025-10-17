@@ -54,10 +54,10 @@ After installing the intl extension and restarting the server, all routes should
 - `PATCH /api/users/{id}` - Partial update user
 
 ### Custom Controller Routes:
-- `POST /api/auth/register` - User registration
-- `POST /api/auth/login` - User login
-- `GET /api/auth/me` - Get current user
-- `POST /api/auth/refresh` - Refresh token
+- `POST /auth/register` - User registration
+- `POST /auth/login` - User login
+- `GET /auth/me` - Get current user
+- `POST /auth/refresh` - Refresh token
 
 ## 🚀 Next Steps
 

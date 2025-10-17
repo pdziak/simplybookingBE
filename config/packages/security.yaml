@@ -12,10 +12,10 @@ security:
             pattern: ^/(_(profiler|wdt)|css|images|js)/
             security: false
         login:
-            pattern: ^/api/auth/login
+            pattern: ^/auth/login
             stateless: true
             json_login:
-                check_path: /api/auth/login
+                check_path: /auth/login
                 username_path: login
                 password_path: password
                 success_handler: lexik_jwt_authentication.handler.authentication_success
@@ -35,14 +35,14 @@ security:
     # Easy way to control access for large sections of your site
     # Note: Only the *first* access control that matches will be used
     access_control:
-        - { path: ^/api/auth/register, roles: PUBLIC_ACCESS }
-        - { path: ^/api/auth/login, roles: PUBLIC_ACCESS }
-        - { path: ^/api/auth/google, roles: PUBLIC_ACCESS }
-        - { path: ^/api/auth/google/callback, roles: PUBLIC_ACCESS }
-        - { path: ^/api/auth/verify-email, roles: PUBLIC_ACCESS }
-        - { path: ^/api/auth/resend-verification, roles: PUBLIC_ACCESS }
-        - { path: ^/api/auth/test-cors, roles: PUBLIC_ACCESS }
-        - { path: ^/api/auth/simple-test, roles: PUBLIC_ACCESS }
+        - { path: ^/auth/register, roles: PUBLIC_ACCESS }
+        - { path: ^/auth/login, roles: PUBLIC_ACCESS }
+        - { path: ^/auth/google, roles: PUBLIC_ACCESS }
+        - { path: ^/auth/google/callback, roles: PUBLIC_ACCESS }
+        - { path: ^/auth/verify-email, roles: PUBLIC_ACCESS }
+        - { path: ^/auth/resend-verification, roles: PUBLIC_ACCESS }
+        - { path: ^/auth/test-cors, roles: PUBLIC_ACCESS }
+        - { path: ^/auth/simple-test, roles: PUBLIC_ACCESS }
         - { path: ^/api/health, roles: PUBLIC_ACCESS }
         - { path: ^/api/uploads, roles: PUBLIC_ACCESS }
         - { path: ^/api/upload, roles: IS_AUTHENTICATED_FULLY }

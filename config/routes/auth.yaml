@@ -1,0 +1,5 @@
+# Auth controller without /api prefix
+auth_controller:
+    resource: App\AuthController\AuthController
+    type: attribute
+    prefix: ''

@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Controller;
+namespace App\AuthController;
 
 use App\DTO\AuthResponse;
 use App\DTO\LoginRequest;
@@ -19,7 +19,7 @@ use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Serializer\SerializerInterface;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 
-#[Route('/auth', name: 'api_auth_')]
+#[Route('/auth', name: 'auth_')]
 class AuthController extends AbstractController
 {
     public function __construct(
