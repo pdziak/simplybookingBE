@@ -19,6 +19,25 @@ class AppController extends AbstractController
         private SerializerInterface $serializer
     ) {}
 
+    #[Route('', name: 'list_all', methods: ['GET'])]
+    public function listAll(): JsonResponse
+    {
+        // Get all apps (for admin or public access)
+        $apps = $this->entityManager->getRepository(App::class)->findAll();
+        
+        // Serialize with context to avoid circular references
+        $jsonData = $this->serializer->serialize($apps, 'json', [
+            'groups' => ['app:read'],
+            'circular_reference_handler' => function ($object) {
+                return $object->getId();
+            }
+        ]);
+        
+        $response = new JsonResponse($jsonData, Response::HTTP_OK, [], true);
+        
+        return $response;
+    }
+
     #[Route('/mine', name: 'list', methods: ['GET'])]
     public function list(): JsonResponse
     {
@@ -41,9 +60,6 @@ class AppController extends AbstractController
         ]);
         
         $response = new JsonResponse($jsonData, Response::HTTP_OK, [], true);
-        $response->headers->set('Access-Control-Allow-Origin', 'http://benefitowo.webdev:3000');
-        $response->headers->set('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-        $response->headers->set('Access-Control-Allow-Headers', 'Content-Type, Authorization');
         
         return $response;
     }
@@ -53,9 +69,6 @@ class AppController extends AbstractController
     {
         if ($request->isMethod('OPTIONS')) {
             $response = new JsonResponse();
-            $response->headers->set('Access-Control-Allow-Origin', 'http://benefitowo.webdev:3000');
-            $response->headers->set('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-            $response->headers->set('Access-Control-Allow-Headers', 'Content-Type, Authorization');
             return $response;
         }
 
@@ -112,9 +125,6 @@ class AppController extends AbstractController
             }
         ]);
         $response = new JsonResponse($jsonData, Response::HTTP_CREATED, [], true);
-        $response->headers->set('Access-Control-Allow-Origin', 'http://benefitowo.webdev:3000');
-        $response->headers->set('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-        $response->headers->set('Access-Control-Allow-Headers', 'Content-Type, Authorization');
         
         return $response;
     }
@@ -135,9 +145,6 @@ class AppController extends AbstractController
             }
         ]);
         $response = new JsonResponse($jsonData, Response::HTTP_OK, [], true);
-        $response->headers->set('Access-Control-Allow-Origin', 'http://benefitowo.webdev:3000');
-        $response->headers->set('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-        $response->headers->set('Access-Control-Allow-Headers', 'Content-Type, Authorization');
         
         return $response;
     }
@@ -147,9 +154,6 @@ class AppController extends AbstractController
     {
         if ($request->isMethod('OPTIONS')) {
             $response = new JsonResponse();
-            $response->headers->set('Access-Control-Allow-Origin', 'http://benefitowo.webdev:3000');
-            $response->headers->set('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-            $response->headers->set('Access-Control-Allow-Headers', 'Content-Type, Authorization');
             return $response;
         }
 
@@ -189,9 +193,6 @@ class AppController extends AbstractController
             }
         ]);
         $response = new JsonResponse($jsonData, Response::HTTP_OK, [], true);
-        $response->headers->set('Access-Control-Allow-Origin', 'http://benefitowo.webdev:3000');
-        $response->headers->set('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-        $response->headers->set('Access-Control-Allow-Headers', 'Content-Type, Authorization');
         
         return $response;
     }
@@ -201,9 +202,6 @@ class AppController extends AbstractController
     {
         if ($request->isMethod('OPTIONS')) {
             $response = new JsonResponse();
-            $response->headers->set('Access-Control-Allow-Origin', 'http://benefitowo.webdev:3000');
-            $response->headers->set('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-            $response->headers->set('Access-Control-Allow-Headers', 'Content-Type, Authorization');
             return $response;
         }
 
@@ -217,9 +215,6 @@ class AppController extends AbstractController
         $this->entityManager->flush();
         
         $response = new JsonResponse(['message' => 'App deleted successfully'], Response::HTTP_OK);
-        $response->headers->set('Access-Control-Allow-Origin', 'http://benefitowo.webdev:3000');
-        $response->headers->set('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-        $response->headers->set('Access-Control-Allow-Headers', 'Content-Type, Authorization');
         
         return $response;
     }

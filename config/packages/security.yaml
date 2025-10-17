@@ -20,6 +20,10 @@ security:
                 password_path: password
                 success_handler: lexik_jwt_authentication.handler.authentication_success
                 failure_handler: App\Security\CustomAuthenticationFailureHandler
+        auth:
+            pattern: ^/auth
+            stateless: true
+            jwt: ~
         api:
             pattern: ^/api
             stateless: true

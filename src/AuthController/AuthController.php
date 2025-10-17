@@ -39,10 +39,6 @@ class AuthController extends AbstractController
         // Handle preflight OPTIONS request
         if ($request->isMethod('OPTIONS')) {
             $response = new JsonResponse();
-            $response->headers->set('Access-Control-Allow-Origin', 'http://benefitowo.webdev:3000');
-            $response->headers->set('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-            $response->headers->set('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With');
-            $response->headers->set('Access-Control-Allow-Credentials', 'true');
             $response->headers->set('Access-Control-Max-Age', '3600');
             return $response;
         }
@@ -61,10 +57,6 @@ class AuthController extends AbstractController
                 'error' => 'Validation failed',
                 'details' => (string) $errors
             ], Response::HTTP_BAD_REQUEST);
-            $response->headers->set('Access-Control-Allow-Origin', 'http://benefitowo.webdev:3000');
-            $response->headers->set('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-            $response->headers->set('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With');
-            $response->headers->set('Access-Control-Allow-Credentials', 'true');
             return $response;
         }
 
@@ -76,10 +68,6 @@ class AuthController extends AbstractController
             $response = new JsonResponse([
                 'error' => 'User with this email already exists'
             ], Response::HTTP_CONFLICT);
-            $response->headers->set('Access-Control-Allow-Origin', 'http://benefitowo.webdev:3000');
-            $response->headers->set('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-            $response->headers->set('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With');
-            $response->headers->set('Access-Control-Allow-Credentials', 'true');
             return $response;
         }
 
@@ -92,10 +80,6 @@ class AuthController extends AbstractController
                 $response = new JsonResponse([
                     'error' => 'Login is already taken'
                 ], Response::HTTP_CONFLICT);
-                $response->headers->set('Access-Control-Allow-Origin', 'http://benefitowo.webdev:3000');
-                $response->headers->set('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-                $response->headers->set('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With');
-                $response->headers->set('Access-Control-Allow-Credentials', 'true');
                 return $response;
             }
         }
@@ -136,10 +120,6 @@ class AuthController extends AbstractController
         ], Response::HTTP_CREATED);
         
         // Add CORS headers
-        $response->headers->set('Access-Control-Allow-Origin', 'http://benefitowo.webdev:3000');
-        $response->headers->set('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-        $response->headers->set('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With');
-        $response->headers->set('Access-Control-Allow-Credentials', 'true');
         
         return $response;
     }
@@ -150,10 +130,6 @@ class AuthController extends AbstractController
         // Handle preflight OPTIONS request
         if ($request->isMethod('OPTIONS')) {
             $response = new JsonResponse();
-            $response->headers->set('Access-Control-Allow-Origin', 'http://benefitowo.webdev:3000');
-            $response->headers->set('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-            $response->headers->set('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With');
-            $response->headers->set('Access-Control-Allow-Credentials', 'true');
             $response->headers->set('Access-Control-Max-Age', '3600');
             return $response;
         }
@@ -171,10 +147,6 @@ class AuthController extends AbstractController
                 'error' => 'Validation failed',
                 'details' => (string) $errors
             ], Response::HTTP_BAD_REQUEST);
-            $response->headers->set('Access-Control-Allow-Origin', 'http://benefitowo.webdev:3000');
-            $response->headers->set('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-            $response->headers->set('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With');
-            $response->headers->set('Access-Control-Allow-Credentials', 'true');
             return $response;
         }
 
@@ -185,10 +157,6 @@ class AuthController extends AbstractController
             $response = new JsonResponse([
                 'error' => 'Invalid credentials'
             ], Response::HTTP_UNAUTHORIZED);
-            $response->headers->set('Access-Control-Allow-Origin', 'http://benefitowo.webdev:3000');
-            $response->headers->set('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-            $response->headers->set('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With');
-            $response->headers->set('Access-Control-Allow-Credentials', 'true');
             return $response;
         }
 
@@ -196,10 +164,6 @@ class AuthController extends AbstractController
             $response = new JsonResponse([
                 'error' => 'Invalid credentials'
             ], Response::HTTP_UNAUTHORIZED);
-            $response->headers->set('Access-Control-Allow-Origin', 'http://benefitowo.webdev:3000');
-            $response->headers->set('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-            $response->headers->set('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With');
-            $response->headers->set('Access-Control-Allow-Credentials', 'true');
             return $response;
         }
 
@@ -209,10 +173,6 @@ class AuthController extends AbstractController
                 'error' => 'Please verify your email address before logging in. Check your email for verification instructions.',
                 'emailVerified' => false
             ], Response::HTTP_FORBIDDEN);
-            $response->headers->set('Access-Control-Allow-Origin', 'http://benefitowo.webdev:3000');
-            $response->headers->set('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-            $response->headers->set('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With');
-            $response->headers->set('Access-Control-Allow-Credentials', 'true');
             return $response;
         }
 
@@ -239,10 +199,6 @@ class AuthController extends AbstractController
             Response::HTTP_OK, [], true);
         
         // Add CORS headers
-        $jsonResponse->headers->set('Access-Control-Allow-Origin', 'http://benefitowo.webdev:3000');
-        $jsonResponse->headers->set('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-        $jsonResponse->headers->set('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With');
-        $jsonResponse->headers->set('Access-Control-Allow-Credentials', 'true');
         
         return $jsonResponse;
     }
@@ -448,10 +404,6 @@ class AuthController extends AbstractController
         // Handle preflight OPTIONS request
         if ($request->isMethod('OPTIONS')) {
             $response = new JsonResponse();
-            $response->headers->set('Access-Control-Allow-Origin', 'http://benefitowo.webdev:3000');
-            $response->headers->set('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-            $response->headers->set('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With');
-            $response->headers->set('Access-Control-Allow-Credentials', 'true');
             $response->headers->set('Access-Control-Max-Age', '3600');
             return $response;
         }
@@ -462,10 +414,6 @@ class AuthController extends AbstractController
         ]);
         
         // Add CORS headers
-        $response->headers->set('Access-Control-Allow-Origin', 'http://benefitowo.webdev:3000');
-        $response->headers->set('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-        $response->headers->set('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With');
-        $response->headers->set('Access-Control-Allow-Credentials', 'true');
         
         return $response;
     }
@@ -476,10 +424,6 @@ class AuthController extends AbstractController
         // Handle preflight OPTIONS request
         if ($request->isMethod('OPTIONS')) {
             $response = new JsonResponse();
-            $response->headers->set('Access-Control-Allow-Origin', 'http://benefitowo.webdev:3000');
-            $response->headers->set('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-            $response->headers->set('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With');
-            $response->headers->set('Access-Control-Allow-Credentials', 'true');
             $response->headers->set('Access-Control-Max-Age', '3600');
             return $response;
         }
@@ -490,10 +434,6 @@ class AuthController extends AbstractController
             $response = new JsonResponse([
                 'error' => 'Not authenticated'
             ], Response::HTTP_UNAUTHORIZED);
-            $response->headers->set('Access-Control-Allow-Origin', 'http://benefitowo.webdev:3000');
-            $response->headers->set('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-            $response->headers->set('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With');
-            $response->headers->set('Access-Control-Allow-Credentials', 'true');
             return $response;
         }
 
@@ -503,10 +443,6 @@ class AuthController extends AbstractController
             $response = new JsonResponse([
                 'error' => 'Invalid JSON data'
             ], Response::HTTP_BAD_REQUEST);
-            $response->headers->set('Access-Control-Allow-Origin', 'http://benefitowo.webdev:3000');
-            $response->headers->set('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-            $response->headers->set('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With');
-            $response->headers->set('Access-Control-Allow-Credentials', 'true');
             return $response;
         }
 
@@ -529,10 +465,6 @@ class AuthController extends AbstractController
                     $response = new JsonResponse([
                         'error' => 'Login is already taken'
                     ], Response::HTTP_CONFLICT);
-                    $response->headers->set('Access-Control-Allow-Origin', 'http://benefitowo.webdev:3000');
-                    $response->headers->set('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-                    $response->headers->set('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With');
-                    $response->headers->set('Access-Control-Allow-Credentials', 'true');
                     return $response;
                 }
             }
@@ -563,10 +495,6 @@ class AuthController extends AbstractController
         ];
 
         $response = new JsonResponse($userData, Response::HTTP_OK);
-        $response->headers->set('Access-Control-Allow-Origin', 'http://benefitowo.webdev:3000');
-        $response->headers->set('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-        $response->headers->set('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With');
-        $response->headers->set('Access-Control-Allow-Credentials', 'true');
         
         return $response;
     }
@@ -577,10 +505,6 @@ class AuthController extends AbstractController
         // Handle preflight OPTIONS request
         if ($request->isMethod('OPTIONS')) {
             $response = new JsonResponse();
-            $response->headers->set('Access-Control-Allow-Origin', 'http://benefitowo.webdev:3000');
-            $response->headers->set('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-            $response->headers->set('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With');
-            $response->headers->set('Access-Control-Allow-Credentials', 'true');
             $response->headers->set('Access-Control-Max-Age', '3600');
             return $response;
         }
@@ -591,10 +515,6 @@ class AuthController extends AbstractController
             $response = new JsonResponse([
                 'error' => 'Not authenticated'
             ], Response::HTTP_UNAUTHORIZED);
-            $response->headers->set('Access-Control-Allow-Origin', 'http://benefitowo.webdev:3000');
-            $response->headers->set('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-            $response->headers->set('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With');
-            $response->headers->set('Access-Control-Allow-Credentials', 'true');
             return $response;
         }
 
@@ -604,10 +524,6 @@ class AuthController extends AbstractController
             $response = new JsonResponse([
                 'error' => 'Invalid JSON data'
             ], Response::HTTP_BAD_REQUEST);
-            $response->headers->set('Access-Control-Allow-Origin', 'http://benefitowo.webdev:3000');
-            $response->headers->set('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-            $response->headers->set('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With');
-            $response->headers->set('Access-Control-Allow-Credentials', 'true');
             return $response;
         }
 
@@ -618,10 +534,6 @@ class AuthController extends AbstractController
             $response = new JsonResponse([
                 'error' => 'Current password and new password are required'
             ], Response::HTTP_BAD_REQUEST);
-            $response->headers->set('Access-Control-Allow-Origin', 'http://benefitowo.webdev:3000');
-            $response->headers->set('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-            $response->headers->set('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With');
-            $response->headers->set('Access-Control-Allow-Credentials', 'true');
             return $response;
         }
 
@@ -630,10 +542,6 @@ class AuthController extends AbstractController
             $response = new JsonResponse([
                 'error' => 'Current password is incorrect'
             ], Response::HTTP_BAD_REQUEST);
-            $response->headers->set('Access-Control-Allow-Origin', 'http://benefitowo.webdev:3000');
-            $response->headers->set('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-            $response->headers->set('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With');
-            $response->headers->set('Access-Control-Allow-Credentials', 'true');
             return $response;
         }
 
@@ -642,10 +550,6 @@ class AuthController extends AbstractController
             $response = new JsonResponse([
                 'error' => 'New password must be at least 8 characters long'
             ], Response::HTTP_BAD_REQUEST);
-            $response->headers->set('Access-Control-Allow-Origin', 'http://benefitowo.webdev:3000');
-            $response->headers->set('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-            $response->headers->set('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With');
-            $response->headers->set('Access-Control-Allow-Credentials', 'true');
             return $response;
         }
 
@@ -659,10 +563,6 @@ class AuthController extends AbstractController
         $response = new JsonResponse([
             'message' => 'Password changed successfully'
         ], Response::HTTP_OK);
-        $response->headers->set('Access-Control-Allow-Origin', 'http://benefitowo.webdev:3000');
-        $response->headers->set('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-        $response->headers->set('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With');
-        $response->headers->set('Access-Control-Allow-Credentials', 'true');
         
         return $response;
     }
@@ -673,10 +573,6 @@ class AuthController extends AbstractController
         // Handle preflight OPTIONS request
         if ($request->isMethod('OPTIONS')) {
             $response = new JsonResponse();
-            $response->headers->set('Access-Control-Allow-Origin', 'http://benefitowo.webdev:3000');
-            $response->headers->set('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-            $response->headers->set('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With');
-            $response->headers->set('Access-Control-Allow-Credentials', 'true');
             $response->headers->set('Access-Control-Max-Age', '3600');
             return $response;
         }
@@ -688,10 +584,6 @@ class AuthController extends AbstractController
         ]);
         
         // Add CORS headers
-        $response->headers->set('Access-Control-Allow-Origin', 'http://benefitowo.webdev:3000');
-        $response->headers->set('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-        $response->headers->set('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With');
-        $response->headers->set('Access-Control-Allow-Credentials', 'true');
         
         return $response;
     }
