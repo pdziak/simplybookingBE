@@ -1,0 +1,6 @@
+auth_controller:
+    resource:
+        path: ../../src/AuthController/
+        namespace: App\AuthController
+    type: attribute
+    prefix: ''

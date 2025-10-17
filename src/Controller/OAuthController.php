@@ -23,7 +23,6 @@ class OAuthController extends AbstractController
     ) {
     }
 
-    #[Route('/auth/google', name: 'google_oauth', methods: ['GET'])]
     public function googleOAuth(): JsonResponse
     {
         $client = $this->clientRegistry->getClient('google');
@@ -36,7 +35,6 @@ class OAuthController extends AbstractController
         ]);
     }
 
-    #[Route('/auth/google/callback', name: 'google_oauth_callback', methods: ['GET'])]
     public function googleOAuthCallback(Request $request): JsonResponse
     {
         try {

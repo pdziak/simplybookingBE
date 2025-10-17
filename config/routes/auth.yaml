@@ -1,5 +1,9 @@
-# Auth controller without /api prefix
-auth_controller:
-    resource: App\AuthController\AuthController
-    type: attribute
-    prefix: ''
+oauth_google:
+    path: /auth/google
+    controller: App\Controller\OAuthController::googleOAuth
+    methods: [GET]
+
+oauth_google_callback:
+    path: /auth/google/callback
+    controller: App\Controller\OAuthController::googleOAuthCallback
+    methods: [GET]
