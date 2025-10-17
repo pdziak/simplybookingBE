@@ -461,6 +461,197 @@ class AuthController extends AbstractController
         return $response;
     }
 
+    #[Route('/profile', name: 'profile', methods: ['PUT', 'OPTIONS'])]
+    public function updateProfile(Request $request): JsonResponse
+    {
+        // Handle preflight OPTIONS request
+        if ($request->isMethod('OPTIONS')) {
+            $response = new JsonResponse();
+            $response->headers->set('Access-Control-Allow-Origin', 'http://benefitowo.webdev:3000');
+            $response->headers->set('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+            $response->headers->set('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With');
+            $response->headers->set('Access-Control-Allow-Credentials', 'true');
+            $response->headers->set('Access-Control-Max-Age', '3600');
+            return $response;
+        }
+
+        $user = $this->getUser();
+        
+        if (!$user instanceof User) {
+            $response = new JsonResponse([
+                'error' => 'Not authenticated'
+            ], Response::HTTP_UNAUTHORIZED);
+            $response->headers->set('Access-Control-Allow-Origin', 'http://benefitowo.webdev:3000');
+            $response->headers->set('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+            $response->headers->set('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With');
+            $response->headers->set('Access-Control-Allow-Credentials', 'true');
+            return $response;
+        }
+
+        $data = json_decode($request->getContent(), true);
+        
+        if (!$data) {
+            $response = new JsonResponse([
+                'error' => 'Invalid JSON data'
+            ], Response::HTTP_BAD_REQUEST);
+            $response->headers->set('Access-Control-Allow-Origin', 'http://benefitowo.webdev:3000');
+            $response->headers->set('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+            $response->headers->set('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With');
+            $response->headers->set('Access-Control-Allow-Credentials', 'true');
+            return $response;
+        }
+
+        // Update user properties if provided
+        if (isset($data['name'])) {
+            $user->setFirstName($data['name']);
+        }
+
+        if (isset($data['login'])) {
+            // Check if login is being changed and if it already exists
+            if ($data['login'] !== $user->getLogin()) {
+                $existingUserByLogin = $this->entityManager->getRepository(User::class)
+                    ->findOneBy(['login' => $data['login']]);
+
+                if ($existingUserByLogin) {
+                    $response = new JsonResponse([
+                        'error' => 'Login is already taken'
+                    ], Response::HTTP_CONFLICT);
+                    $response->headers->set('Access-Control-Allow-Origin', 'http://benefitowo.webdev:3000');
+                    $response->headers->set('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+                    $response->headers->set('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With');
+                    $response->headers->set('Access-Control-Allow-Credentials', 'true');
+                    return $response;
+                }
+            }
+            $user->setLogin($data['login']);
+        }
+
+        // Update the updatedAt timestamp
+        $user->setUpdatedAt(new \DateTimeImmutable());
+
+        // Persist changes
+        $this->entityManager->flush();
+
+        // Return updated user data
+        $userData = [
+            'id' => $user->getId(),
+            'email' => $user->getEmail(),
+            'name' => $user->getFirstName(), // Map firstName to name for frontend compatibility
+            'login' => $user->getLogin(),
+            'firstName' => $user->getFirstName(),
+            'lastName' => $user->getLastName(),
+            'roles' => $user->getRoles(),
+            'emailVerified' => $user->isEmailVerified(),
+            'emailVerifiedAt' => $user->getEmailVerifiedAt()?->format('Y-m-d H:i:s'),
+            'createdAt' => $user->getCreatedAt()->format('Y-m-d H:i:s'),
+            'updatedAt' => $user->getUpdatedAt()?->format('Y-m-d H:i:s')
+        ];
+
+        $response = new JsonResponse($userData, Response::HTTP_OK);
+        $response->headers->set('Access-Control-Allow-Origin', 'http://benefitowo.webdev:3000');
+        $response->headers->set('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+        $response->headers->set('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With');
+        $response->headers->set('Access-Control-Allow-Credentials', 'true');
+        
+        return $response;
+    }
+
+    #[Route('/change-password', name: 'change_password', methods: ['PUT', 'OPTIONS'])]
+    public function changePassword(Request $request): JsonResponse
+    {
+        // Handle preflight OPTIONS request
+        if ($request->isMethod('OPTIONS')) {
+            $response = new JsonResponse();
+            $response->headers->set('Access-Control-Allow-Origin', 'http://benefitowo.webdev:3000');
+            $response->headers->set('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+            $response->headers->set('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With');
+            $response->headers->set('Access-Control-Allow-Credentials', 'true');
+            $response->headers->set('Access-Control-Max-Age', '3600');
+            return $response;
+        }
+
+        $user = $this->getUser();
+        
+        if (!$user instanceof User) {
+            $response = new JsonResponse([
+                'error' => 'Not authenticated'
+            ], Response::HTTP_UNAUTHORIZED);
+            $response->headers->set('Access-Control-Allow-Origin', 'http://benefitowo.webdev:3000');
+            $response->headers->set('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+            $response->headers->set('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With');
+            $response->headers->set('Access-Control-Allow-Credentials', 'true');
+            return $response;
+        }
+
+        $data = json_decode($request->getContent(), true);
+        
+        if (!$data) {
+            $response = new JsonResponse([
+                'error' => 'Invalid JSON data'
+            ], Response::HTTP_BAD_REQUEST);
+            $response->headers->set('Access-Control-Allow-Origin', 'http://benefitowo.webdev:3000');
+            $response->headers->set('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+            $response->headers->set('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With');
+            $response->headers->set('Access-Control-Allow-Credentials', 'true');
+            return $response;
+        }
+
+        $currentPassword = $data['currentPassword'] ?? null;
+        $newPassword = $data['newPassword'] ?? null;
+
+        if (!$currentPassword || !$newPassword) {
+            $response = new JsonResponse([
+                'error' => 'Current password and new password are required'
+            ], Response::HTTP_BAD_REQUEST);
+            $response->headers->set('Access-Control-Allow-Origin', 'http://benefitowo.webdev:3000');
+            $response->headers->set('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+            $response->headers->set('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With');
+            $response->headers->set('Access-Control-Allow-Credentials', 'true');
+            return $response;
+        }
+
+        // Verify current password
+        if (!$this->passwordHasher->isPasswordValid($user, $currentPassword)) {
+            $response = new JsonResponse([
+                'error' => 'Current password is incorrect'
+            ], Response::HTTP_BAD_REQUEST);
+            $response->headers->set('Access-Control-Allow-Origin', 'http://benefitowo.webdev:3000');
+            $response->headers->set('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+            $response->headers->set('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With');
+            $response->headers->set('Access-Control-Allow-Credentials', 'true');
+            return $response;
+        }
+
+        // Validate new password strength
+        if (strlen($newPassword) < 8) {
+            $response = new JsonResponse([
+                'error' => 'New password must be at least 8 characters long'
+            ], Response::HTTP_BAD_REQUEST);
+            $response->headers->set('Access-Control-Allow-Origin', 'http://benefitowo.webdev:3000');
+            $response->headers->set('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+            $response->headers->set('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With');
+            $response->headers->set('Access-Control-Allow-Credentials', 'true');
+            return $response;
+        }
+
+        // Update password
+        $user->setPassword($this->passwordHasher->hashPassword($user, $newPassword));
+        $user->setUpdatedAt(new \DateTimeImmutable());
+
+        // Persist changes
+        $this->entityManager->flush();
+
+        $response = new JsonResponse([
+            'message' => 'Password changed successfully'
+        ], Response::HTTP_OK);
+        $response->headers->set('Access-Control-Allow-Origin', 'http://benefitowo.webdev:3000');
+        $response->headers->set('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+        $response->headers->set('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With');
+        $response->headers->set('Access-Control-Allow-Credentials', 'true');
+        
+        return $response;
+    }
+
     #[Route('/simple-test', name: 'simple_test', methods: ['GET', 'OPTIONS'])]
     public function simpleTest(Request $request): JsonResponse
     {
