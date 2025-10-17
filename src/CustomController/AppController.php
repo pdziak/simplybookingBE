@@ -19,7 +19,7 @@ class AppController extends AbstractController
         private SerializerInterface $serializer
     ) {}
 
-    #[Route('', name: 'list', methods: ['GET'])]
+    #[Route('/mine', name: 'list', methods: ['GET'])]
     public function list(): JsonResponse
     {
         $apps = $this->entityManager->getRepository(App::class)->findAll();

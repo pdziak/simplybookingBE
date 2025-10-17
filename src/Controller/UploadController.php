@@ -86,7 +86,7 @@ class UploadController extends AbstractController
         }
 
         // Return the URL to the uploaded file
-        $fileUrl = '/uploads/logos/' . $newFilename;
+        $fileUrl = 'logos/' . $newFilename;
         
         return $this->json([
             'success' => true,
@@ -164,7 +164,7 @@ class UploadController extends AbstractController
         }
 
         // Return the URL to the uploaded file
-        $fileUrl = '/uploads/products/' . $newFilename;
+        $fileUrl = 'products/' . $newFilename;
         
         return $this->json([
             'success' => true,
