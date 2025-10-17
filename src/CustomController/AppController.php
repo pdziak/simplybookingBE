@@ -22,7 +22,15 @@ class AppController extends AbstractController
     #[Route('/mine', name: 'list', methods: ['GET'])]
     public function list(): JsonResponse
     {
-        $apps = $this->entityManager->getRepository(App::class)->findAll();
+        $user = $this->getUser();
+        
+        if (!$user) {
+            return $this->json(['error' => 'Authentication required'], Response::HTTP_UNAUTHORIZED);
+        }
+
+        // Get only apps belonging to the current user
+        $apps = $this->entityManager->getRepository(App::class)
+            ->findBy(['owner' => $user]);
         
         // Serialize with context to avoid circular references
         $jsonData = $this->serializer->serialize($apps, 'json', [
