@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Controller;
+namespace App\ProductsController;
 
 use App\Entity\Product;
 use App\Entity\Category;
