@@ -417,4 +417,253 @@ class UserController extends AbstractController
 
         return new JsonResponse($userResponses, Response::HTTP_OK);
     }
+
+    #[Route('/apps/{appId}/users/search', name: 'search_app_users', methods: ['GET'])]
+    public function searchAppUsers(int $appId, Request $request): JsonResponse
+    {
+        // Check if user has admin role or is the app owner
+        $currentUser = $this->getUser();
+        if (!$currentUser) {
+            return new JsonResponse(['error' => 'Authentication required'], Response::HTTP_UNAUTHORIZED);
+        }
+
+        // Find the app
+        $app = $this->entityManager->getRepository(\App\Entity\App::class)->find($appId);
+        if (!$app) {
+            return new JsonResponse(['error' => 'App not found'], Response::HTTP_NOT_FOUND);
+        }
+
+        // Check if user is admin or app owner
+        $isAdmin = in_array('ROLE_ADMIN', $currentUser->getRoles());
+        $isAppOwner = $app->getOwner() === $currentUser;
+        
+        if (!$isAdmin && !$isAppOwner) {
+            return new JsonResponse(['error' => 'Access denied. Admin role or app ownership required.'], Response::HTTP_FORBIDDEN);
+        }
+
+        // Get search parameters
+        $query = $request->query->get('q', '');
+        $limit = (int) $request->query->get('limit', 10);
+        $offset = (int) $request->query->get('offset', 0);
+
+        // Search through ALL users in the system, not just assigned ones
+        $userRepository = $this->entityManager->getRepository(User::class);
+        
+        if (empty($query)) {
+            // If no search query, return all users
+            $allUsers = $userRepository->findAll();
+        } else {
+            // Use DQL to search users efficiently
+            $qb = $userRepository->createQueryBuilder('u');
+            $qb->where('u.email LIKE :query')
+               ->orWhere('u.firstName LIKE :query')
+               ->orWhere('u.lastName LIKE :query')
+               ->orWhere('u.login LIKE :query')
+               ->setParameter('query', '%' . $query . '%');
+            
+            $allUsers = $qb->getQuery()->getResult();
+        }
+        
+        // Filter users based on search query (if not already done by DQL)
+        $filteredUsers = [];
+        foreach ($allUsers as $user) {
+            if (empty($query) || 
+                stripos($user->getEmail(), $query) !== false ||
+                stripos($user->getFirstName() ?? '', $query) !== false ||
+                stripos($user->getLastName() ?? '', $query) !== false ||
+                stripos($user->getLogin() ?? '', $query) !== false) {
+                $filteredUsers[] = $user;
+            }
+        }
+
+        // Apply pagination
+        $total = count($filteredUsers);
+        $paginatedUsers = array_slice($filteredUsers, $offset, $limit);
+        
+        // Get assigned user IDs for this app
+        $assignedUserIds = [];
+        foreach ($app->getAssignedUsers() as $assignedUser) {
+            $assignedUserIds[] = $assignedUser->getId();
+        }
+
+        $userResponses = array_map(function (User $user) use ($assignedUserIds) {
+            return [
+                'id' => $user->getId(),
+                'email' => $user->getEmail(),
+                'firstName' => $user->getFirstName(),
+                'lastName' => $user->getLastName(),
+                'login' => $user->getLogin(),
+                'roles' => $user->getRoles(),
+                'emailVerified' => $user->isEmailVerified(),
+                'emailVerifiedAt' => $user->getEmailVerifiedAt()?->format('Y-m-d H:i:s'),
+                'createdAt' => $user->getCreatedAt()->format('Y-m-d H:i:s'),
+                'updatedAt' => $user->getUpdatedAt()?->format('Y-m-d H:i:s'),
+                'isAssignedToApp' => in_array($user->getId(), $assignedUserIds)
+            ];
+        }, $paginatedUsers);
+
+        return new JsonResponse([
+            'data' => $userResponses,
+            'total' => $total,
+            'limit' => $limit,
+            'offset' => $offset,
+            'hasMore' => ($offset + $limit) < $total
+        ], Response::HTTP_OK);
+    }
+
+    #[Route('/apps/{appId}/users', name: 'assign_user_to_app', methods: ['POST'])]
+    public function assignUserToApp(int $appId, Request $request): JsonResponse
+    {
+        // Check if user has admin role or is the app owner
+        $currentUser = $this->getUser();
+        if (!$currentUser) {
+            return new JsonResponse(['error' => 'Authentication required'], Response::HTTP_UNAUTHORIZED);
+        }
+
+        // Find the app
+        $app = $this->entityManager->getRepository(\App\Entity\App::class)->find($appId);
+        if (!$app) {
+            return new JsonResponse(['error' => 'App not found'], Response::HTTP_NOT_FOUND);
+        }
+
+        // Check if user is admin or app owner
+        $isAdmin = in_array('ROLE_ADMIN', $currentUser->getRoles());
+        $isAppOwner = $app->getOwner() === $currentUser;
+        
+        if (!$isAdmin && !$isAppOwner) {
+            return new JsonResponse(['error' => 'Access denied. Admin role or app ownership required.'], Response::HTTP_FORBIDDEN);
+        }
+
+        // Get request data
+        $data = json_decode($request->getContent(), true);
+        if (!$data) {
+            return new JsonResponse(['error' => 'Request body is required'], Response::HTTP_BAD_REQUEST);
+        }
+
+        // Handle both single userId and array of userIds
+        $userIds = [];
+        if (isset($data['userId'])) {
+            $userIds = [(int) $data['userId']];
+        } elseif (isset($data['userIds']) && is_array($data['userIds'])) {
+            $userIds = array_map('intval', $data['userIds']);
+        } else {
+            return new JsonResponse(['error' => 'userId or userIds is required'], Response::HTTP_BAD_REQUEST);
+        }
+
+        if (empty($userIds)) {
+            return new JsonResponse(['error' => 'At least one userId is required'], Response::HTTP_BAD_REQUEST);
+        }
+
+        $assignedUsers = [];
+        $alreadyAssigned = [];
+        $notFound = [];
+
+        foreach ($userIds as $userId) {
+            // Find the user to assign
+            $user = $this->entityManager->getRepository(User::class)->find($userId);
+            if (!$user) {
+                $notFound[] = $userId;
+                continue;
+            }
+
+            // Check if user is already assigned to this app
+            if ($app->getAssignedUsers()->contains($user)) {
+                $alreadyAssigned[] = [
+                    'id' => $user->getId(),
+                    'email' => $user->getEmail(),
+                    'firstName' => $user->getFirstName(),
+                    'lastName' => $user->getLastName(),
+                    'login' => $user->getLogin()
+                ];
+                continue;
+            }
+
+            // Assign user to app
+            $app->addAssignedUser($user);
+            $assignedUsers[] = [
+                'id' => $user->getId(),
+                'email' => $user->getEmail(),
+                'firstName' => $user->getFirstName(),
+                'lastName' => $user->getLastName(),
+                'login' => $user->getLogin()
+            ];
+        }
+
+        $this->entityManager->flush();
+
+        $response = [
+            'message' => 'User assignment completed',
+            'assigned' => $assignedUsers,
+            'app' => [
+                'id' => $app->getId(),
+                'title' => $app->getTitle(),
+                'slug' => $app->getSlug()
+            ]
+        ];
+
+        if (!empty($alreadyAssigned)) {
+            $response['alreadyAssigned'] = $alreadyAssigned;
+        }
+
+        if (!empty($notFound)) {
+            $response['notFound'] = $notFound;
+        }
+
+        return new JsonResponse($response, Response::HTTP_CREATED);
+    }
+
+    #[Route('/apps/{appId}/users/{userId}', name: 'remove_user_from_app', methods: ['DELETE'])]
+    public function removeUserFromApp(int $appId, int $userId): JsonResponse
+    {
+        // Check if user has admin role or is the app owner
+        $currentUser = $this->getUser();
+        if (!$currentUser) {
+            return new JsonResponse(['error' => 'Authentication required'], Response::HTTP_UNAUTHORIZED);
+        }
+
+        // Find the app
+        $app = $this->entityManager->getRepository(\App\Entity\App::class)->find($appId);
+        if (!$app) {
+            return new JsonResponse(['error' => 'App not found'], Response::HTTP_NOT_FOUND);
+        }
+
+        // Check if user is admin or app owner
+        $isAdmin = in_array('ROLE_ADMIN', $currentUser->getRoles());
+        $isAppOwner = $app->getOwner() === $currentUser;
+        
+        if (!$isAdmin && !$isAppOwner) {
+            return new JsonResponse(['error' => 'Access denied. Admin role or app ownership required.'], Response::HTTP_FORBIDDEN);
+        }
+
+        // Find the user to remove
+        $user = $this->entityManager->getRepository(User::class)->find($userId);
+        if (!$user) {
+            return new JsonResponse(['error' => 'User not found'], Response::HTTP_NOT_FOUND);
+        }
+
+        // Check if user is assigned to this app
+        if (!$app->getAssignedUsers()->contains($user)) {
+            return new JsonResponse(['error' => 'User is not assigned to this app'], Response::HTTP_NOT_FOUND);
+        }
+
+        // Remove user from app
+        $app->removeAssignedUser($user);
+        $this->entityManager->flush();
+
+        return new JsonResponse([
+            'message' => 'User successfully removed from app',
+            'user' => [
+                'id' => $user->getId(),
+                'email' => $user->getEmail(),
+                'firstName' => $user->getFirstName(),
+                'lastName' => $user->getLastName(),
+                'login' => $user->getLogin()
+            ],
+            'app' => [
+                'id' => $app->getId(),
+                'title' => $app->getTitle(),
+                'slug' => $app->getSlug()
+            ]
+        ], Response::HTTP_OK);
+    }
 }
