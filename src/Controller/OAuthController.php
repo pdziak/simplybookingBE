@@ -149,20 +149,35 @@ class OAuthController extends AbstractController
                 'emailVerifiedAt' => $user->getEmailVerifiedAt()?->format('Y-m-d H:i:s')
             ];
             
-            return new JsonResponse([
+            // Get the frontend URL from environment or use default
+            $frontendUrl = $_ENV['FRONTEND_URL'] ?? 'http://localhost:3000';
+            
+            // Create the redirect URL with token and user data as URL parameters
+            $redirectUrl = $frontendUrl . '/auth/google/callback?' . http_build_query([
                 'token' => $token,
-                'user' => $userData
+                'user' => json_encode($userData),
+                'success' => 'true'
             ]);
+            
+            // Redirect to frontend with token
+            return $this->redirect($redirectUrl);
             
         } catch (\Exception $e) {
             // Log the error for debugging
             error_log('OAuth authentication error: ' . $e->getMessage());
             error_log('Stack trace: ' . $e->getTraceAsString());
             
-            return new JsonResponse([
+            // Get the frontend URL from environment or use default
+            $frontendUrl = $_ENV['FRONTEND_URL'] ?? 'http://localhost:3000';
+            
+            // Redirect to frontend with error message
+            $redirectUrl = $frontendUrl . '/auth/google/callback?' . http_build_query([
                 'error' => 'OAuth authentication failed',
-                'message' => $e->getMessage()
-            ], 400);
+                'message' => $e->getMessage(),
+                'success' => 'false'
+            ]);
+            
+            return $this->redirect($redirectUrl);
         }
     }
 }
