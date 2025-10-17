@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Controller;
+namespace App\CustomController;
 
 use App\Entity\App;
 use Doctrine\ORM\EntityManagerInterface;
@@ -24,7 +24,15 @@ class AppController extends AbstractController
     {
         $apps = $this->entityManager->getRepository(App::class)->findAll();
         
-        $response = new JsonResponse($this->serializer->serialize($apps, 'json'), Response::HTTP_OK, [], true);
+        // Serialize with context to avoid circular references
+        $jsonData = $this->serializer->serialize($apps, 'json', [
+            'groups' => ['app:read'],
+            'circular_reference_handler' => function ($object) {
+                return $object->getId();
+            }
+        ]);
+        
+        $response = new JsonResponse($jsonData, Response::HTTP_OK, [], true);
         $response->headers->set('Access-Control-Allow-Origin', 'http://benefitowo.webdev:3000');
         $response->headers->set('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
         $response->headers->set('Access-Control-Allow-Headers', 'Content-Type, Authorization');
@@ -56,7 +64,13 @@ class AppController extends AbstractController
         $this->entityManager->persist($app);
         $this->entityManager->flush();
         
-        $response = new JsonResponse($this->serializer->serialize($app, 'json'), Response::HTTP_CREATED, [], true);
+        $jsonData = $this->serializer->serialize($app, 'json', [
+            'groups' => ['app:read'],
+            'circular_reference_handler' => function ($object) {
+                return $object->getId();
+            }
+        ]);
+        $response = new JsonResponse($jsonData, Response::HTTP_CREATED, [], true);
         $response->headers->set('Access-Control-Allow-Origin', 'http://benefitowo.webdev:3000');
         $response->headers->set('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
         $response->headers->set('Access-Control-Allow-Headers', 'Content-Type, Authorization');
@@ -73,7 +87,13 @@ class AppController extends AbstractController
             return new JsonResponse(['error' => 'App not found'], Response::HTTP_NOT_FOUND);
         }
         
-        $response = new JsonResponse($this->serializer->serialize($app, 'json'), Response::HTTP_OK, [], true);
+        $jsonData = $this->serializer->serialize($app, 'json', [
+            'groups' => ['app:read'],
+            'circular_reference_handler' => function ($object) {
+                return $object->getId();
+            }
+        ]);
+        $response = new JsonResponse($jsonData, Response::HTTP_OK, [], true);
         $response->headers->set('Access-Control-Allow-Origin', 'http://benefitowo.webdev:3000');
         $response->headers->set('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
         $response->headers->set('Access-Control-Allow-Headers', 'Content-Type, Authorization');
@@ -121,7 +141,13 @@ class AppController extends AbstractController
         
         $this->entityManager->flush();
         
-        $response = new JsonResponse($this->serializer->serialize($app, 'json'), Response::HTTP_OK, [], true);
+        $jsonData = $this->serializer->serialize($app, 'json', [
+            'groups' => ['app:read'],
+            'circular_reference_handler' => function ($object) {
+                return $object->getId();
+            }
+        ]);
+        $response = new JsonResponse($jsonData, Response::HTTP_OK, [], true);
         $response->headers->set('Access-Control-Allow-Origin', 'http://benefitowo.webdev:3000');
         $response->headers->set('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
         $response->headers->set('Access-Control-Allow-Headers', 'Content-Type, Authorization');

@@ -9,6 +9,7 @@ use ApiPlatform\Metadata\ApiResource;
 
 #[ORM\Entity]
 #[ORM\Table(name: 'apps')]
+// #[ApiResource] - Temporarily disabled due to getNativeType bug in API Platform 4.1.24+
 class App
 {
     #[ORM\Id]

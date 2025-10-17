@@ -4,3 +4,11 @@ controllers:
         namespace: App\Controller
     type: attribute
     prefix: /api
+
+# Custom API Platform replacement controllers (without /api prefix)
+custom_controllers:
+    resource:
+        path: ../src/CustomController/
+        namespace: App\CustomController
+    type: attribute
+    prefix: ''

@@ -5,9 +5,11 @@ namespace App\Entity;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Serializer\Annotation\Groups;
+use ApiPlatform\Metadata\ApiResource;
 
 #[ORM\Entity]
 #[ORM\Table(name: 'products')]
+// #[ApiResource] - Temporarily disabled due to getNativeType bug in API Platform 4.1.24+
 class Product
 {
     #[ORM\Id]

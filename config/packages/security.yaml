@@ -24,6 +24,10 @@ security:
             pattern: ^/api
             stateless: true
             jwt: ~
+        api_platform:
+            pattern: ^/(users|apps|categories|products)
+            stateless: true
+            jwt: ~
         main:
             lazy: true
             provider: app_user_provider
@@ -43,6 +47,12 @@ security:
         - { path: ^/api/uploads, roles: PUBLIC_ACCESS }
         - { path: ^/dev, roles: PUBLIC_ACCESS }
         - { path: ^/api, roles: PUBLIC_ACCESS }
+        # Custom API Platform replacement endpoints (without /api prefix)
+        - { path: ^/apps, roles: PUBLIC_ACCESS }
+        - { path: ^/categories, roles: PUBLIC_ACCESS }
+        - { path: ^/products, roles: PUBLIC_ACCESS }
+        # Original API Platform entities (if re-enabled)
+        - { path: ^/users, roles: IS_AUTHENTICATED_FULLY }
 
 when@test:
     security:
