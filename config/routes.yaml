@@ -13,3 +13,9 @@ custom_controllers:
         namespace: App\CustomController
     type: attribute
     prefix: ''
+
+# Subdomain products controller (without /api prefix)
+subdomain_products_controller:
+    resource: App\ProductsController\SubdomainProductController
+    type: attribute
+    prefix: ''

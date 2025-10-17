@@ -69,6 +69,13 @@ class UploadController extends AbstractController
         // Generate a unique filename
         $originalFilename = pathinfo($uploadedFile->getClientOriginalName(), PATHINFO_FILENAME);
         $safeFilename = $this->slugger->slug($originalFilename);
+        
+        // Limit filename length to prevent database issues (max 400 chars for filename)
+        // We need to leave room for the uniqid and extension
+        if (strlen($safeFilename) > 400) {
+            $safeFilename = substr($safeFilename, 0, 400);
+        }
+        
         $extension = $uploadedFile->guessExtension() ?: 'bin';
         $newFilename = $safeFilename . '-' . uniqid() . '.' . $extension;
 
@@ -147,6 +154,13 @@ class UploadController extends AbstractController
         // Generate a unique filename
         $originalFilename = pathinfo($uploadedFile->getClientOriginalName(), PATHINFO_FILENAME);
         $safeFilename = $this->slugger->slug($originalFilename);
+        
+        // Limit filename length to prevent database issues (max 400 chars for filename)
+        // We need to leave room for the uniqid and extension
+        if (strlen($safeFilename) > 400) {
+            $safeFilename = substr($safeFilename, 0, 400);
+        }
+        
         $extension = $uploadedFile->guessExtension() ?: 'bin';
         $newFilename = $safeFilename . '-' . uniqid() . '.' . $extension;
 
