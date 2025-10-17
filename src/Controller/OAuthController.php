@@ -63,10 +63,16 @@ class OAuthController extends AbstractController
             $user = $this->entityManager->getRepository(User::class)
                 ->findOneBy(['googleId' => $googleId]);
             
+            error_log('OAuth: Looking for user with Google ID: ' . $googleId);
+            error_log('OAuth: User found by Google ID: ' . ($user ? 'Yes (ID: ' . $user->getId() . ')' : 'No'));
+            
             if (!$user) {
                 // Check if user exists by email
                 $user = $this->entityManager->getRepository(User::class)
                     ->findOneBy(['email' => $email]);
+                
+                error_log('OAuth: Looking for user with email: ' . $email);
+                error_log('OAuth: User found by email: ' . ($user ? 'Yes (ID: ' . $user->getId() . ')' : 'No'));
                 
                 if ($user) {
                     // Link existing user with Google ID
@@ -75,6 +81,8 @@ class OAuthController extends AbstractController
                     if ($user->getEmailVerifiedAt() === null) {
                         $user->setEmailVerifiedAt(new \DateTimeImmutable());
                     }
+                    // User already exists, just update it
+                    $this->entityManager->flush();
                 } else {
                     // Create new user
                     $user = new User();
@@ -86,10 +94,10 @@ class OAuthController extends AbstractController
                     // Verify email for OAuth users since Google has already verified it
                     $user->setEmailVerifiedAt(new \DateTimeImmutable());
                     // No password needed for OAuth users
+                    
+                    $this->entityManager->persist($user);
+                    $this->entityManager->flush();
                 }
-                
-                $this->entityManager->persist($user);
-                $this->entityManager->flush();
             }
             
             // Generate JWT token
@@ -112,6 +120,10 @@ class OAuthController extends AbstractController
             ]);
             
         } catch (\Exception $e) {
+            // Log the error for debugging
+            error_log('OAuth authentication error: ' . $e->getMessage());
+            error_log('Stack trace: ' . $e->getTraceAsString());
+            
             return new JsonResponse([
                 'error' => 'OAuth authentication failed',
                 'message' => $e->getMessage()
