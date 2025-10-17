@@ -1,7 +1,7 @@
 nelmio_cors:
     defaults:
         origin_regex: false
-        allow_origin: ['http://benefitowo.webdev:3000', 'http://localhost:3000', 'http://127.0.0.1:3000', 'http://benefitowo.webdev:8080', 'http://localhost:8080', 'http://127.0.0.1:8080']
+        allow_origin: ['http://benefitowo.webdev:3000', 'http://localhost:3000', 'http://127.0.0.1:3000', 'http://benefitowo.webdev:8080', 'http://localhost:8080', 'http://127.0.0.1:8080', 'https://benefitowo.pl']
         allow_methods: ['GET', 'OPTIONS', 'POST', 'PUT', 'PATCH', 'DELETE']
         allow_headers: ['Content-Type', 'Authorization', 'X-Requested-With']
         expose_headers: ['Link']
@@ -9,7 +9,7 @@ nelmio_cors:
         allow_credentials: true
     paths:
         '^/':
-            allow_origin: ['http://benefitowo.webdev:3000', 'http://localhost:3000', 'http://127.0.0.1:3000', 'http://benefitowo.webdev:8080', 'http://localhost:8080', 'http://127.0.0.1:8080']
+            allow_origin: ['http://benefitowo.webdev:3000', 'http://localhost:3000', 'http://127.0.0.1:3000', 'http://benefitowo.webdev:8080', 'http://localhost:8080', 'http://127.0.0.1:8080', 'https://benefitowo.pl']
             allow_headers: ['Content-Type', 'Authorization', 'X-Requested-With']
             allow_methods: ['GET', 'OPTIONS', 'POST', 'PUT', 'PATCH', 'DELETE']
             max_age: 3600
