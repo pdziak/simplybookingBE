@@ -15,23 +15,23 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column(type: 'integer')]
-    #[Groups(['user:read', 'app:read'])]
+    #[Groups(['user:read', 'app:read', 'app:subdomain'])]
     private ?int $id = null;
 
     #[ORM\Column(type: 'string', length: 180, unique: true)]
     #[Assert\NotBlank]
     #[Assert\Email]
-    #[Groups(['user:read', 'user:write', 'app:read'])]
+    #[Groups(['user:read', 'user:write', 'app:read', 'app:subdomain'])]
     private string $email;
 
     #[ORM\Column(type: 'string', length: 50, unique: true, nullable: true)]
     #[Assert\Length(min: 3, max: 50)]
     #[Assert\Regex(pattern: '/^[a-zA-Z0-9_]+$/', message: 'Login can only contain letters, numbers, and underscores')]
-    #[Groups(['user:read', 'user:write', 'app:read'])]
+    #[Groups(['user:read', 'user:write', 'app:read', 'app:subdomain'])]
     private ?string $login = null;
 
     #[ORM\Column(type: 'json')]
-    #[Groups(['user:read', 'user:write', 'app:read'])]
+    #[Groups(['user:read', 'user:write', 'app:read', 'app:subdomain'])]
     private array $roles = [];
 
     #[ORM\Column(type: 'string', nullable: true)]
@@ -42,11 +42,11 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     private ?string $googleId = null;
 
     #[ORM\Column(type: 'string', length: 255, nullable: true)]
-    #[Groups(['user:read', 'user:write', 'app:read'])]
+    #[Groups(['user:read', 'user:write', 'app:read', 'app:subdomain'])]
     private ?string $firstName = null;
 
     #[ORM\Column(type: 'string', length: 255, nullable: true)]
-    #[Groups(['user:read', 'user:write', 'app:read'])]
+    #[Groups(['user:read', 'user:write', 'app:read', 'app:subdomain'])]
     private ?string $lastName = null;
 
     #[ORM\Column(type: 'datetime_immutable')]

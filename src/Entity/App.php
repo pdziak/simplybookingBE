@@ -66,11 +66,11 @@ class App
 
     #[ORM\ManyToOne(targetEntity: User::class)]
     #[ORM\JoinColumn(name: 'user_id', referencedColumnName: 'id', nullable: false)]
-    #[Groups(['app:read'])]
+    #[Groups(['app:read', 'app:subdomain'])]
     private User $owner;
 
     #[ORM\OneToMany(targetEntity: Category::class, mappedBy: 'app', cascade: ['persist', 'remove'])]
-    #[Groups(['app:read'])]
+    #[Groups(['app:read', 'app:subdomain'])]
     private $categories;
 
     #[ORM\ManyToMany(targetEntity: User::class, mappedBy: 'assignedApps')]

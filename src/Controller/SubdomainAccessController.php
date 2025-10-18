@@ -66,9 +66,35 @@ class SubdomainAccessController extends AbstractController
 
         // Return app data if user has access
         $jsonData = $this->serializer->serialize($app, 'json', [
-            'groups' => ['app:read'],
-            'circular_reference_handler' => function ($object) {
-                return $object->getId();
+            'groups' => ['app:subdomain'],
+            'circular_reference_handler' => function ($object, $format, $context) {
+                // Handle different types of circular references
+                if ($object instanceof \App\Entity\App) {
+                    return [
+                        'id' => $object->getId(),
+                        'title' => $object->getTitle(),
+                        'slug' => $object->getSlug(),
+                        'companyName' => $object->getCompanyName(),
+                        'logo' => $object->getLogo()
+                    ];
+                } elseif ($object instanceof \App\Entity\User) {
+                    return [
+                        'id' => $object->getId(),
+                        'email' => $object->getEmail(),
+                        'login' => $object->getLogin(),
+                        'firstName' => $object->getFirstName(),
+                        'lastName' => $object->getLastName()
+                    ];
+                } elseif ($object instanceof \App\Entity\Category) {
+                    return [
+                        'id' => $object->getId(),
+                        'categoryName' => $object->getCategoryName(),
+                        'createdAt' => $object->getCreatedAt()->format('Y-m-d H:i:s')
+                    ];
+                }
+                
+                // Fallback to ID for other objects
+                return method_exists($object, 'getId') ? $object->getId() : null;
             }
         ]);
         $response = new JsonResponse($jsonData, Response::HTTP_OK, [], true);
