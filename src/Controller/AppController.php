@@ -117,11 +117,11 @@ class AppController extends AbstractController
             $existingApp->setCompanyName($data['companyName'] ?? '');
             $existingApp->setEmail($data['email'] ?? '');
             $existingApp->setDescription($data['description'] ?? '');
-            $existingApp->setLogo($data['logo'] ?? '');
+            $existingApp->setLogo($data['logo'] ?? null);
             $existingApp->setUpdatedAt(new \DateTimeImmutable());
             
-            // Validate the updated app
-            $errors = $this->validator->validate($existingApp);
+            // Validate the updated app with 'update' group (no logo required)
+            $errors = $this->validator->validate($existingApp, null, ['update']);
             if (count($errors) > 0) {
                 $errorMessages = [];
                 foreach ($errors as $error) {
@@ -148,11 +148,11 @@ class AppController extends AbstractController
             $app->setCompanyName($data['companyName'] ?? '');
             $app->setEmail($data['email'] ?? '');
             $app->setDescription($data['description'] ?? '');
-            $app->setLogo($data['logo'] ?? '');
+            $app->setLogo($data['logo'] ?? null);
             $app->setOwner($user); // Set the owner (user) for the app
             
-            // Validate the new app
-            $errors = $this->validator->validate($app);
+            // Validate the new app with 'create' group
+            $errors = $this->validator->validate($app, null, ['create']);
             if (count($errors) > 0) {
                 $errorMessages = [];
                 foreach ($errors as $error) {
@@ -235,8 +235,8 @@ class AppController extends AbstractController
             $app->setLogo($data['logo']);
         }
         
-        // Validate the updated app
-        $errors = $this->validator->validate($app);
+        // Validate the updated app with 'update' group (no logo required)
+        $errors = $this->validator->validate($app, null, ['update']);
         if (count($errors) > 0) {
             $errorMessages = [];
             foreach ($errors as $error) {

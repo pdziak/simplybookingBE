@@ -43,6 +43,11 @@ services:
         arguments:
             $appUrl: '%env(APP_URL)%'
     
+    # Order notification service
+    App\Service\OrderNotificationService:
+        arguments:
+            $appUrl: '%env(APP_URL)%'
+    
     # JWT Payload Handler
     App\Security\JWTPayloadHandler:
         tags:

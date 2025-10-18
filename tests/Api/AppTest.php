@@ -98,6 +98,24 @@ class AppTest extends ApiTestCase
         $this->assertResponseStatusCodeSame(422);
     }
 
+    public function testCreateAppWithReservedApiSlug(): void
+    {
+        static::createClient()->request('POST', '/api/apps', [
+            'json' => [
+                'title' => 'API App',
+                'slug' => 'api',
+                'companyName' => 'API Company',
+                'email' => 'api@example.com',
+                'logo' => 'https://example.com/logo.png',
+            ],
+            'headers' => [
+                'Content-Type' => 'application/ld+json',
+            ],
+        ]);
+
+        $this->assertResponseStatusCodeSame(422);
+    }
+
     public function testCreateAppWithMissingRequiredFields(): void
     {
         static::createClient()->request('POST', '/api/apps', [

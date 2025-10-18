@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nowe zamówienie w sklepie {{ app.title }}</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .header {
+            background-color: #ff5a00;
+            color: white;
+            padding: 20px;
+            text-align: center;
+            border-radius: 8px 8px 0 0;
+        }
+        .content {
+            background-color: #f9f9f9;
+            padding: 20px;
+            border-radius: 0 0 8px 8px;
+        }
+        .order-details {
+            background-color: white;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 15px 0;
+        }
+        .product-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid #eee;
+        }
+        .product-item:last-child {
+            border-bottom: none;
+        }
+        .total {
+            font-weight: bold;
+            font-size: 18px;
+            color: #ff5a00;
+            text-align: right;
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 2px solid #ff5a00;
+        }
+        .customer-info {
+            background-color: #e8f4f8;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 15px 0;
+        }
+        .footer {
+            text-align: center;
+            margin-top: 20px;
+            color: #666;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🛍️ Nowe zamówienie w sklepie {{ app.title }}</h1>
+        <p>Otrzymałeś nowe zamówienie od klienta</p>
+    </div>
+    
+    <div class="content">
+        <h2>Szczegóły zamówienia</h2>
+        
+        <div class="order-details">
+            <p><strong>Numer zamówienia:</strong> #{{ order.id }}</p>
+            <p><strong>Data zamówienia:</strong> {{ order.createdAt|date('d.m.Y H:i') }}</p>
+        </div>
+
+        <div class="customer-info">
+            <h3>Dane klienta</h3>
+            <p><strong>Imię i nazwisko:</strong> {{ order.firstname }} {{ order.lastname }}</p>
+            <p><strong>Email:</strong> {{ order.email }}</p>
+            <p><strong>Typ dostawy:</strong> 
+                {% if order.shippingLocation == 'home' %}
+                    Dostawa do domu
+                {% else %}
+                    Odbiór w biurze
+                {% endif %}
+            </p>
+            {% if order.shippingAddress %}
+                <p><strong>Adres dostawy:</strong> {{ order.shippingAddress }}</p>
+            {% endif %}
+        </div>
+
+        <h3>Zamówione produkty</h3>
+        <div class="order-details">
+            {% for orderProduct in order.orderProducts %}
+                <div class="product-item">
+                    <div>
+                        <strong>{{ orderProduct.product.productName }}</strong>
+                        <br>
+                        <small>Ilość: {{ orderProduct.quantity }} × {{ orderProduct.unitPrice|number_format(2, ',', ' ') }} zł</small>
+                    </div>
+                    <div>
+                        <strong>{{ orderProduct.totalPrice|number_format(2, ',', ' ') }} zł</strong>
+                    </div>
+                </div>
+            {% endfor %}
+            
+            <div class="total">
+                <strong>Łączna kwota: {{ orderTotal|number_format(2, ',', ' ') }} zł</strong>
+            </div>
+        </div>
+
+        <div style="text-align: center; margin-top: 30px;">
+            <a href="{{ appUrl }}/app" style="background-color: #ff5a00; color: white; padding: 12px 24px; text-decoration: none; border-radius: 5px; display: inline-block;">
+                Przejdź do panelu administracyjnego
+            </a>
+        </div>
+    </div>
+
+    <div class="footer">
+        <p>To jest automatyczna wiadomość z systemu Benefitowo.</p>
+        <p>Nie odpowiadaj na ten email.</p>
+    </div>
+</body>
+</html>

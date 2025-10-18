@@ -9,6 +9,7 @@ use App\Entity\Cart;
 use App\Entity\CartItem;
 use App\Entity\Product;
 use App\Service\BudgetService;
+use App\Service\OrderNotificationService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -25,7 +26,8 @@ class OrdersController extends AbstractController
         private EntityManagerInterface $entityManager,
         private SerializerInterface $serializer,
         private ValidatorInterface $validator,
-        private BudgetService $budgetService
+        private BudgetService $budgetService,
+        private OrderNotificationService $orderNotificationService
     ) {}
 
     #[Route('', name: 'create', methods: ['POST', 'OPTIONS'])]
@@ -175,6 +177,15 @@ class OrdersController extends AbstractController
                     'error' => 'Redukcja budżetu nie powiodła się',
                     'message' => 'Nie udało się zaktualizować budżetu. Zamówienie zostało anulowane.'
                 ], Response::HTTP_INTERNAL_SERVER_ERROR);
+            }
+
+            // Send email notification to app owner
+            try {
+                $this->orderNotificationService->sendOrderNotificationToOwner($order, $app);
+                error_log('Order notification email sent successfully for order: ' . $order->getId());
+            } catch (\Exception $e) {
+                // Log the error but don't fail the order
+                error_log('Failed to send order notification email: ' . $e->getMessage());
             }
 
             // Return the created order

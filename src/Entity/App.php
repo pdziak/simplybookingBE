@@ -51,14 +51,15 @@ class App
     #[Groups(['app:read', 'app:write', 'app:subdomain'])]
     private ?string $description = null;
 
-    #[ORM\Column(type: 'string', length: 500)]
-    #[Assert\NotBlank(message: 'Logo is required')]
+    #[ORM\Column(type: 'string', length: 500, nullable: true)]
+    #[Assert\NotBlank(message: 'Logo is required', groups: ['create'])]
     #[Assert\Regex(
         pattern: '/^logos\/[a-zA-Z0-9\-_\.]+$/',
-        message: 'Logo must be a valid logo path'
+        message: 'Logo must be a valid logo path',
+        groups: ['create', 'update']
     )]
     #[Groups(['app:read', 'app:write', 'app:subdomain'])]
-    private string $logo;
+    private ?string $logo = null;
 
     #[ORM\Column(type: 'datetime_immutable')]
     #[Groups(['app:read'])]
@@ -153,12 +154,12 @@ class App
         return $this;
     }
 
-    public function getLogo(): string
+    public function getLogo(): ?string
     {
         return $this->logo;
     }
 
-    public function setLogo(string $logo): static
+    public function setLogo(?string $logo): static
     {
         $this->logo = $logo;
         return $this;
