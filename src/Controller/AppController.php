@@ -37,6 +37,32 @@ class AppController extends AbstractController
         return $response;
     }
 
+    #[Route('/mine', name: 'mine', methods: ['GET'])]
+    public function mine(): JsonResponse
+    {
+        $user = $this->getUser();
+        
+        if (!$user) {
+            return $this->json(['error' => 'Authentication required'], Response::HTTP_UNAUTHORIZED);
+        }
+
+        // Get only apps belonging to the current user
+        $apps = $this->entityManager->getRepository(App::class)
+            ->findBy(['owner' => $user]);
+        
+        // Serialize with context to avoid circular references
+        $jsonData = $this->serializer->serialize($apps, 'json', [
+            'groups' => ['app:read'],
+            'circular_reference_handler' => function ($object) {
+                return $object->getId();
+            }
+        ]);
+        
+        $response = new JsonResponse($jsonData, Response::HTTP_OK, [], true);
+        
+        return $response;
+    }
+
     #[Route('/my-app', name: 'my_app', methods: ['GET'])]
     public function myApp(): JsonResponse
     {
