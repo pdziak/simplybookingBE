@@ -22,6 +22,58 @@ class ContentController extends AbstractController
     ) {
     }
 
+    // Public endpoints (no authentication required)
+    #[Route('/public', name: 'public_list', methods: ['GET'])]
+    public function publicList(): JsonResponse
+    {
+        // Get only active content for public access
+        $content = $this->entityManager->getRepository(Content::class)
+            ->createQueryBuilder('c')
+            ->where('c.isActive = :active')
+            ->setParameter('active', true)
+            ->orderBy('c.createdAt', 'DESC')
+            ->getQuery()
+            ->getResult();
+        
+        return $this->json($content, Response::HTTP_OK, [], ['groups' => ['content:read']]);
+    }
+
+    #[Route('/public/slug/{slug}', name: 'public_show_by_slug', methods: ['GET'])]
+    public function publicShowBySlug(string $slug): JsonResponse
+    {
+        $content = $this->entityManager->getRepository(Content::class)
+            ->findOneBy(['slug' => $slug]);
+        
+        if (!$content) {
+            return $this->json(['error' => 'Content not found'], Response::HTTP_NOT_FOUND);
+        }
+
+        // Only return if content is active
+        if (!$content->isActive()) {
+            return $this->json(['error' => 'Content not found'], Response::HTTP_NOT_FOUND);
+        }
+
+        return $this->json($content, Response::HTTP_OK, [], ['groups' => ['content:read']]);
+    }
+
+    #[Route('/public/{id}', name: 'public_show', methods: ['GET'])]
+    public function publicShow(int $id): JsonResponse
+    {
+        $content = $this->entityManager->getRepository(Content::class)->find($id);
+        
+        if (!$content) {
+            return $this->json(['error' => 'Content not found'], Response::HTTP_NOT_FOUND);
+        }
+
+        // Only return if content is active
+        if (!$content->isActive()) {
+            return $this->json(['error' => 'Content not found'], Response::HTTP_NOT_FOUND);
+        }
+
+        return $this->json($content, Response::HTTP_OK, [], ['groups' => ['content:read']]);
+    }
+
+    // Authenticated endpoints (require authentication)
     #[Route('', name: 'list', methods: ['GET'])]
     public function list(): JsonResponse
     {
@@ -82,24 +134,6 @@ class ContentController extends AbstractController
         }
     }
 
-    #[Route('/{id}', name: 'show', methods: ['GET'])]
-    public function show(int $id): JsonResponse
-    {
-        $user = $this->getUser();
-        
-        if (!$user) {
-            return $this->json(['error' => 'Authentication required'], Response::HTTP_UNAUTHORIZED);
-        }
-
-        $content = $this->entityManager->getRepository(Content::class)->find($id);
-        
-        if (!$content) {
-            return $this->json(['error' => 'Content not found'], Response::HTTP_NOT_FOUND);
-        }
-
-        return $this->json($content, Response::HTTP_OK, [], ['groups' => ['content:read']]);
-    }
-
     #[Route('/slug/{slug}', name: 'show_by_slug', methods: ['GET'])]
     public function showBySlug(string $slug): JsonResponse
     {
@@ -111,6 +145,24 @@ class ContentController extends AbstractController
 
         $content = $this->entityManager->getRepository(Content::class)
             ->findOneBy(['slug' => $slug]);
+        
+        if (!$content) {
+            return $this->json(['error' => 'Content not found'], Response::HTTP_NOT_FOUND);
+        }
+
+        return $this->json($content, Response::HTTP_OK, [], ['groups' => ['content:read']]);
+    }
+
+    #[Route('/{id}', name: 'show', methods: ['GET'])]
+    public function show(int $id): JsonResponse
+    {
+        $user = $this->getUser();
+        
+        if (!$user) {
+            return $this->json(['error' => 'Authentication required'], Response::HTTP_UNAUTHORIZED);
+        }
+
+        $content = $this->entityManager->getRepository(Content::class)->find($id);
         
         if (!$content) {
             return $this->json(['error' => 'Content not found'], Response::HTTP_NOT_FOUND);
@@ -222,4 +274,5 @@ class ContentController extends AbstractController
         
         return $this->json($content, Response::HTTP_OK, [], ['groups' => ['content:read']]);
     }
+
 }
