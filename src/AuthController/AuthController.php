@@ -93,6 +93,12 @@ class AuthController extends AbstractController
         $user->setPassword($this->passwordHasher->hashPassword($user, $registerRequest->password));
         // email_verified_at remains null by default - user is not active until email is verified
 
+        // Generate verification token and store it BEFORE persisting the user
+        $token = bin2hex(random_bytes(32));
+        $expiresAt = new \DateTimeImmutable('+24 hours');
+        $user->setEmailVerificationToken($token);
+        $user->setEmailVerificationTokenExpiresAt($expiresAt);
+
         $this->entityManager->persist($user);
         $this->entityManager->flush();
 
@@ -101,7 +107,7 @@ class AuthController extends AbstractController
             $this->emailVerificationService->sendVerificationEmail($user);
         } catch (\Exception $e) {
             // Log the error but don't fail registration
-            // In production, you might want to use a proper logger
+            // The token is already stored, so user can still verify via resend
             error_log('Failed to send verification email: ' . $e->getMessage());
         }
 
@@ -306,15 +312,17 @@ class AuthController extends AbstractController
             ->findOneBy(['emailVerificationToken' => $token]);
 
         if (!$user) {
-            // Check if there's a user with this token in the past (already verified)
-            // We'll search by email if the token looks like a valid format
+            // Token not found - this could mean:
+            // 1. Token is invalid/expired
+            // 2. User was already verified and token was cleared
+            // 3. Token was used and cleared
+            
+            // If token looks valid (64 hex characters), it was likely used before
             if (strlen($token) === 64 && ctype_xdigit($token)) {
-                // This looks like a valid token format, but user might be already verified
-                // Let's provide a more helpful message
                 return new JsonResponse([
-                    'error' => 'Ten link weryfikacyjny został już użyty lub wygasł. Jeśli potrzebujesz potwierdzić swój email, poproś o nowy email weryfikacyjny.',
-                    'code' => 'TOKEN_ALREADY_USED'
-                ], Response::HTTP_BAD_REQUEST);
+                    'message' => 'Twój adres e-mail został aktywowany',
+                    'alreadyVerified' => true
+                ], Response::HTTP_OK);
             }
             
             return new JsonResponse([
@@ -325,7 +333,7 @@ class AuthController extends AbstractController
         // Check if user is already verified
         if ($user->isEmailVerified()) {
             return new JsonResponse([
-                'message' => 'Twój email został już potwierdzony! Możesz się zalogować do swojego konta.',
+                'message' => 'Twój adres e-mail został aktywowany',
                 'user' => [
                     'id' => $user->getId(),
                     'email' => $user->getEmail(),

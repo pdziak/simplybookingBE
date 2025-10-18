@@ -22,20 +22,22 @@ class EmailVerificationService
 
     public function sendVerificationEmail(User $user): void
     {
-        // Generate verification token
-        $token = bin2hex(random_bytes(32));
-        $expiresAt = new \DateTimeImmutable('+24 hours');
+        // Generate verification token only if one doesn't exist
+        if (!$user->getEmailVerificationToken()) {
+            $token = bin2hex(random_bytes(32));
+            $expiresAt = new \DateTimeImmutable('+24 hours');
+            
+            // Store token in user entity
+            $user->setEmailVerificationToken($token);
+            $user->setEmailVerificationTokenExpiresAt($expiresAt);
 
-        // Store token in user entity
-        $user->setEmailVerificationToken($token);
-        $user->setEmailVerificationTokenExpiresAt($expiresAt);
-
-        // Persist the changes to ensure the token is saved
-        $this->entityManager->persist($user);
-        $this->entityManager->flush();
+            // Persist the changes to ensure the token is saved
+            $this->entityManager->persist($user);
+            $this->entityManager->flush();
+        }
 
         // Generate verification URL - point to frontend verification page
-        $verificationUrl = $this->appUrl . '/verify-email?token=' . $token;
+        $verificationUrl = $this->appUrl . '/verify-email?token=' . $user->getEmailVerificationToken();
 
         // Create email
         $email = (new Email())
@@ -45,7 +47,7 @@ class EmailVerificationService
             ->html($this->twig->render('emails/verification.html.twig', [
                 'user' => $user,
                 'verificationUrl' => $verificationUrl,
-                'expiresAt' => $expiresAt,
+                'expiresAt' => $user->getEmailVerificationTokenExpiresAt(),
                 'appUrl' => $this->appUrl
             ]));
 
