@@ -54,7 +54,7 @@ class AuthController extends AbstractController
         $errors = $this->validator->validate($registerRequest);
         if (count($errors) > 0) {
             $response = new JsonResponse([
-                'error' => 'Validation failed',
+                'error' => 'Walidacja nie powiodła się',
                 'details' => (string) $errors
             ], Response::HTTP_BAD_REQUEST);
             return $response;
@@ -66,7 +66,7 @@ class AuthController extends AbstractController
 
         if ($existingUser) {
             $response = new JsonResponse([
-                'error' => 'User with this email already exists'
+                'error' => 'Użytkownik z tym adresem email już istnieje'
             ], Response::HTTP_CONFLICT);
             return $response;
         }
@@ -78,7 +78,7 @@ class AuthController extends AbstractController
 
             if ($existingUserByLogin) {
                 $response = new JsonResponse([
-                    'error' => 'Login is already taken'
+                    'error' => 'Login jest już zajęty'
                 ], Response::HTTP_CONFLICT);
                 return $response;
             }
@@ -142,7 +142,7 @@ class AuthController extends AbstractController
         
         if (!$data) {
             return new JsonResponse([
-                'error' => 'Invalid JSON data'
+                'error' => 'Nieprawidłowe dane JSON'
             ], Response::HTTP_BAD_REQUEST);
         }
 
@@ -153,13 +153,13 @@ class AuthController extends AbstractController
         // Validate that either email or login is provided
         if (empty($email) && empty($login)) {
             return new JsonResponse([
-                'error' => 'Either email or login must be provided'
+                'error' => 'Musi zostać podany email lub login'
             ], Response::HTTP_BAD_REQUEST);
         }
 
         if (empty($password)) {
             return new JsonResponse([
-                'error' => 'Password is required'
+                'error' => 'Hasło jest wymagane'
             ], Response::HTTP_BAD_REQUEST);
         }
 
@@ -170,13 +170,13 @@ class AuthController extends AbstractController
             $user = $this->userProvider->loadUserByIdentifier($identifier);
         } catch (\Symfony\Component\Security\Core\Exception\UserNotFoundException $e) {
             return new JsonResponse([
-                'error' => 'Invalid credentials'
+                'error' => 'Nieprawidłowe dane logowania'
             ], Response::HTTP_UNAUTHORIZED);
         }
 
         if (!$this->passwordHasher->isPasswordValid($user, $password)) {
             return new JsonResponse([
-                'error' => 'Invalid credentials'
+                'error' => 'Nieprawidłowe dane logowania'
             ], Response::HTTP_UNAUTHORIZED);
         }
 
@@ -226,7 +226,7 @@ class AuthController extends AbstractController
         
         if (!$user instanceof User) {
             return new JsonResponse([
-                'error' => 'Not authenticated'
+                'error' => 'Nie jesteś uwierzytelniony'
             ], Response::HTTP_UNAUTHORIZED);
         }
 
@@ -255,14 +255,14 @@ class AuthController extends AbstractController
         
         if (!$user instanceof User) {
             return new JsonResponse([
-                'error' => 'Not authenticated'
+                'error' => 'Nie jesteś uwierzytelniony'
             ], Response::HTTP_UNAUTHORIZED);
         }
 
         // Check if user's email is verified - email_verified_at must not be null
         if ($user->getEmailVerifiedAt() === null) {
             return new JsonResponse([
-                'error' => 'Please verify your email address before accessing this resource.',
+                'error' => 'Proszę potwierdzić swój adres email przed dostępem do tego zasobu.',
                 'emailVerified' => false
             ], Response::HTTP_FORBIDDEN);
         }
@@ -448,7 +448,7 @@ class AuthController extends AbstractController
         
         if (!$user instanceof User) {
             $response = new JsonResponse([
-                'error' => 'Not authenticated'
+                'error' => 'Nie jesteś uwierzytelniony'
             ], Response::HTTP_UNAUTHORIZED);
             return $response;
         }
@@ -457,7 +457,7 @@ class AuthController extends AbstractController
         
         if (!$data) {
             $response = new JsonResponse([
-                'error' => 'Invalid JSON data'
+                'error' => 'Nieprawidłowe dane JSON'
             ], Response::HTTP_BAD_REQUEST);
             return $response;
         }
@@ -479,7 +479,7 @@ class AuthController extends AbstractController
 
                 if ($existingUserByLogin) {
                     $response = new JsonResponse([
-                        'error' => 'Login is already taken'
+                        'error' => 'Login jest już zajęty'
                     ], Response::HTTP_CONFLICT);
                     return $response;
                 }
@@ -529,7 +529,7 @@ class AuthController extends AbstractController
         
         if (!$user instanceof User) {
             $response = new JsonResponse([
-                'error' => 'Not authenticated'
+                'error' => 'Nie jesteś uwierzytelniony'
             ], Response::HTTP_UNAUTHORIZED);
             return $response;
         }
@@ -538,7 +538,7 @@ class AuthController extends AbstractController
         
         if (!$data) {
             $response = new JsonResponse([
-                'error' => 'Invalid JSON data'
+                'error' => 'Nieprawidłowe dane JSON'
             ], Response::HTTP_BAD_REQUEST);
             return $response;
         }
@@ -548,7 +548,7 @@ class AuthController extends AbstractController
 
         if (!$currentPassword || !$newPassword) {
             $response = new JsonResponse([
-                'error' => 'Current password and new password are required'
+                'error' => 'Obecne hasło i nowe hasło są wymagane'
             ], Response::HTTP_BAD_REQUEST);
             return $response;
         }
@@ -556,7 +556,7 @@ class AuthController extends AbstractController
         // Verify current password
         if (!$this->passwordHasher->isPasswordValid($user, $currentPassword)) {
             $response = new JsonResponse([
-                'error' => 'Current password is incorrect'
+                'error' => 'Obecne hasło jest nieprawidłowe'
             ], Response::HTTP_BAD_REQUEST);
             return $response;
         }
@@ -564,7 +564,7 @@ class AuthController extends AbstractController
         // Validate new password strength
         if (strlen($newPassword) < 8) {
             $response = new JsonResponse([
-                'error' => 'New password must be at least 8 characters long'
+                'error' => 'Nowe hasło musi mieć co najmniej 8 znaków'
             ], Response::HTTP_BAD_REQUEST);
             return $response;
         }
