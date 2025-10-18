@@ -66,6 +66,41 @@ class UserController extends AbstractController
             Response::HTTP_OK, [], true);
     }
 
+    #[Route('/me', name: 'me', methods: ['GET'])]
+    public function me(): JsonResponse
+    {
+        $currentUser = $this->getUser();
+        if (!$currentUser) {
+            return new JsonResponse(['error' => 'Authentication required.'], Response::HTTP_UNAUTHORIZED);
+        }
+
+        // Prepare assigned apps data for response
+        $assignedApps = [];
+        foreach ($currentUser->getAssignedApps() as $app) {
+            $assignedApps[] = [
+                'id' => $app->getId(),
+                'title' => $app->getTitle(),
+                'slug' => $app->getSlug(),
+                'companyName' => $app->getCompanyName()
+            ];
+        }
+
+        $userResponse = new UserResponse(
+            $currentUser->getId(),
+            $currentUser->getEmail(),
+            $currentUser->getLogin(),
+            $currentUser->getFirstName(),
+            $currentUser->getLastName(),
+            $currentUser->getRoles(),
+            $currentUser->getCreatedAt()->format('Y-m-d H:i:s'),
+            $currentUser->getUpdatedAt()?->format('Y-m-d H:i:s'),
+            $assignedApps
+        );
+
+        return new JsonResponse($this->serializer->serialize($userResponse, 'json', ['groups' => ['user:read']]), 
+            Response::HTTP_OK, [], true);
+    }
+
     #[Route('/{id}', name: 'get', methods: ['GET'])]
     public function get(int $id): JsonResponse
     {

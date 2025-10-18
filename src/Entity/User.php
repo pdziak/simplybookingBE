@@ -72,10 +72,15 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[Groups(['user:read', 'user:write'])]
     private $assignedApps;
 
+    #[ORM\OneToMany(targetEntity: Budget::class, mappedBy: 'user', cascade: ['persist', 'remove'])]
+    #[Groups(['user:read'])]
+    private $budgets;
+
     public function __construct()
     {
         $this->createdAt = new \DateTimeImmutable();
         $this->assignedApps = new \Doctrine\Common\Collections\ArrayCollection();
+        $this->budgets = new \Doctrine\Common\Collections\ArrayCollection();
     }
 
     public function getId(): ?int
@@ -308,6 +313,36 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     {
         if ($this->assignedApps->removeElement($app)) {
             $app->removeAssignedUser($this);
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return \Doctrine\Common\Collections\Collection<int, Budget>
+     */
+    public function getBudgets(): \Doctrine\Common\Collections\Collection
+    {
+        return $this->budgets;
+    }
+
+    public function addBudget(Budget $budget): static
+    {
+        if (!$this->budgets->contains($budget)) {
+            $this->budgets->add($budget);
+            $budget->setUser($this);
+        }
+
+        return $this;
+    }
+
+    public function removeBudget(Budget $budget): static
+    {
+        if ($this->budgets->removeElement($budget)) {
+            // set the owning side to null (unless already changed)
+            if ($budget->getUser() === $this) {
+                $budget->setUser(null);
+            }
         }
 
         return $this;

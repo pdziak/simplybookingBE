@@ -77,11 +77,16 @@ class App
     #[Groups(['app:read'])]
     private $assignedUsers;
 
+    #[ORM\OneToMany(targetEntity: Budget::class, mappedBy: 'app', cascade: ['persist', 'remove'])]
+    #[Groups(['app:read'])]
+    private $budgets;
+
     public function __construct()
     {
         $this->createdAt = new \DateTimeImmutable();
         $this->categories = new \Doctrine\Common\Collections\ArrayCollection();
         $this->assignedUsers = new \Doctrine\Common\Collections\ArrayCollection();
+        $this->budgets = new \Doctrine\Common\Collections\ArrayCollection();
     }
 
     public function getId(): ?int
@@ -240,6 +245,36 @@ class App
     {
         if ($this->assignedUsers->removeElement($user)) {
             $user->removeAssignedApp($this);
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return \Doctrine\Common\Collections\Collection<int, Budget>
+     */
+    public function getBudgets(): \Doctrine\Common\Collections\Collection
+    {
+        return $this->budgets;
+    }
+
+    public function addBudget(Budget $budget): static
+    {
+        if (!$this->budgets->contains($budget)) {
+            $this->budgets->add($budget);
+            $budget->setApp($this);
+        }
+
+        return $this;
+    }
+
+    public function removeBudget(Budget $budget): static
+    {
+        if ($this->budgets->removeElement($budget)) {
+            // set the owning side to null (unless already changed)
+            if ($budget->getApp() === $this) {
+                $budget->setApp(null);
+            }
         }
 
         return $this;
