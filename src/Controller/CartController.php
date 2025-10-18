@@ -22,6 +22,44 @@ class CartController extends AbstractController
         private SerializerInterface $serializer
     ) {}
 
+    private function buildCartResponse(Cart $cart): array
+    {
+        $cartData = [
+            'id' => $cart->getId(),
+            'user' => [
+                'id' => $cart->getUser()->getId(),
+                'email' => $cart->getUser()->getEmail(),
+            ],
+            'items' => [],
+            'totalItems' => $cart->getTotalItems(),
+            'totalPrice' => $cart->getTotalPrice(),
+            'createdAt' => $cart->getCreatedAt()->format('c'),
+            'updatedAt' => $cart->getUpdatedAt()->format('c'),
+        ];
+
+        foreach ($cart->getItems() as $item) {
+            $cartData['items'][] = [
+                'id' => $item->getId(),
+                'product' => [
+                    'id' => $item->getProduct()->getId(),
+                    'productName' => $item->getProduct()->getProductName(),
+                    'productPrice' => $item->getProduct()->getProductPrice(),
+                    'productDescription' => $item->getProduct()->getProductDescription(),
+                    'productImage' => $item->getProduct()->getProductImage(),
+                    'category' => [
+                        'id' => $item->getProduct()->getCategory()->getId(),
+                        'categoryName' => $item->getProduct()->getCategory()->getCategoryName(),
+                    ],
+                ],
+                'quantity' => $item->getQuantity(),
+                'createdAt' => $item->getCreatedAt()->format('c'),
+                'updatedAt' => $item->getUpdatedAt()->format('c'),
+            ];
+        }
+
+        return $cartData;
+    }
+
     #[Route('', name: 'get', methods: ['GET'])]
     public function getCart(): JsonResponse
     {
@@ -42,7 +80,7 @@ class CartController extends AbstractController
             $this->entityManager->flush();
         }
 
-        return $this->json($cart, Response::HTTP_OK, [], ['groups' => ['cart:read', 'cart_item:read', 'product:read', 'category:read']]);
+        return $this->json($this->buildCartResponse($cart));
     }
 
     #[Route('/items', name: 'add_item', methods: ['POST'])]
@@ -102,7 +140,7 @@ class CartController extends AbstractController
         $cart->setUpdatedAt(new \DateTimeImmutable());
         $this->entityManager->flush();
 
-        return $this->json($cart, Response::HTTP_OK, [], ['groups' => ['cart:read', 'cart_item:read', 'product:read', 'category:read']]);
+        return $this->json($this->buildCartResponse($cart));
     }
 
     #[Route('/items/{productId}', name: 'update_item', methods: ['PUT'])]
@@ -151,7 +189,7 @@ class CartController extends AbstractController
         $cart->setUpdatedAt(new \DateTimeImmutable());
         $this->entityManager->flush();
 
-        return $this->json($cart, Response::HTTP_OK, [], ['groups' => ['cart:read', 'cart_item:read', 'product:read', 'category:read']]);
+        return $this->json($this->buildCartResponse($cart));
     }
 
     #[Route('/items/{productId}', name: 'remove_item', methods: ['DELETE'])]
@@ -187,7 +225,7 @@ class CartController extends AbstractController
         $cart->setUpdatedAt(new \DateTimeImmutable());
         $this->entityManager->flush();
 
-        return $this->json($cart, Response::HTTP_OK, [], ['groups' => ['cart:read', 'cart_item:read', 'product:read', 'category:read']]);
+        return $this->json($this->buildCartResponse($cart));
     }
 
     #[Route('', name: 'clear', methods: ['DELETE'])]
@@ -214,6 +252,6 @@ class CartController extends AbstractController
         $cart->setUpdatedAt(new \DateTimeImmutable());
         $this->entityManager->flush();
 
-        return $this->json($cart, Response::HTTP_OK, [], ['groups' => ['cart:read', 'cart_item:read', 'product:read', 'category:read']]);
+        return $this->json($this->buildCartResponse($cart));
     }
 }

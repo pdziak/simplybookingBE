@@ -32,7 +32,15 @@ class AppController extends AbstractController
         $apps = $this->entityManager->getRepository(App::class)
             ->findBy(['owner' => $user]);
         
-        $response = new JsonResponse($this->serializer->serialize($apps, 'json'), Response::HTTP_OK, [], true);
+        // Serialize with context to avoid circular references
+        $jsonData = $this->serializer->serialize($apps, 'json', [
+            'groups' => ['app:read'],
+            'circular_reference_handler' => function ($object) {
+                return $object->getId();
+            }
+        ]);
+        
+        $response = new JsonResponse($jsonData, Response::HTTP_OK, [], true);
         
         return $response;
     }
@@ -68,7 +76,15 @@ class AppController extends AbstractController
     {
         $apps = $this->entityManager->getRepository(App::class)->findAll();
         
-        $response = new JsonResponse($this->serializer->serialize($apps, 'json'), Response::HTTP_OK, [], true);
+        // Serialize with context to avoid circular references
+        $jsonData = $this->serializer->serialize($apps, 'json', [
+            'groups' => ['app:read'],
+            'circular_reference_handler' => function ($object) {
+                return $object->getId();
+            }
+        ]);
+        
+        $response = new JsonResponse($jsonData, Response::HTTP_OK, [], true);
         
         return $response;
     }
@@ -127,7 +143,15 @@ class AppController extends AbstractController
             $this->entityManager->flush();
         }
         
-        $response = new JsonResponse($this->serializer->serialize($app, 'json'), Response::HTTP_CREATED, [], true);
+        // Serialize with context to avoid circular references
+        $jsonData = $this->serializer->serialize($app, 'json', [
+            'groups' => ['app:read'],
+            'circular_reference_handler' => function ($object) {
+                return $object->getId();
+            }
+        ]);
+        
+        $response = new JsonResponse($jsonData, Response::HTTP_CREATED, [], true);
         
         return $response;
     }
@@ -141,7 +165,15 @@ class AppController extends AbstractController
             return new JsonResponse(['error' => 'App not found'], Response::HTTP_NOT_FOUND);
         }
         
-        $response = new JsonResponse($this->serializer->serialize($app, 'json'), Response::HTTP_OK, [], true);
+        // Serialize with context to avoid circular references
+        $jsonData = $this->serializer->serialize($app, 'json', [
+            'groups' => ['app:read'],
+            'circular_reference_handler' => function ($object) {
+                return $object->getId();
+            }
+        ]);
+        
+        $response = new JsonResponse($jsonData, Response::HTTP_OK, [], true);
         
         return $response;
     }
@@ -183,7 +215,15 @@ class AppController extends AbstractController
         
         $this->entityManager->flush();
         
-        $response = new JsonResponse($this->serializer->serialize($app, 'json'), Response::HTTP_OK, [], true);
+        // Serialize with context to avoid circular references
+        $jsonData = $this->serializer->serialize($app, 'json', [
+            'groups' => ['app:read'],
+            'circular_reference_handler' => function ($object) {
+                return $object->getId();
+            }
+        ]);
+        
+        $response = new JsonResponse($jsonData, Response::HTTP_OK, [], true);
         
         return $response;
     }
