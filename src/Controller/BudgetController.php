@@ -29,7 +29,7 @@ class BudgetController extends AbstractController
 
         return new JsonResponse([
             'data' => $budgets,
-            'message' => 'All budgets retrieved successfully'
+            'message' => 'Wszystkie budżety zostały pomyślnie pobrane'
         ]);
     }
 
@@ -40,7 +40,7 @@ class BudgetController extends AbstractController
         $user = $this->security->getUser();
         
         if (!$user) {
-            return new JsonResponse(['error' => 'User not authenticated'], 401);
+            return new JsonResponse(['error' => 'Użytkownik nie uwierzytelniony'], 401);
         }
 
         $budgets = $this->entityManager->getRepository(Budget::class)
@@ -48,7 +48,7 @@ class BudgetController extends AbstractController
 
         return new JsonResponse([
             'data' => $budgets,
-            'message' => 'User budgets retrieved successfully'
+            'message' => 'Budżety użytkownika zostały pomyślnie pobrane'
         ]);
     }
 
@@ -66,7 +66,7 @@ class BudgetController extends AbstractController
 
         return new JsonResponse([
             'data' => $budgets,
-            'message' => 'App budgets retrieved successfully'
+            'message' => 'Budżety aplikacji zostały pomyślnie pobrane'
         ]);
     }
 
@@ -77,7 +77,7 @@ class BudgetController extends AbstractController
         $user = $this->security->getUser();
         
         if (!$user) {
-            return new JsonResponse(['error' => 'User not authenticated'], 401);
+            return new JsonResponse(['error' => 'Użytkownik nie uwierzytelniony'], 401);
         }
 
         $app = $this->entityManager->getRepository(App::class)->find((int) $appId);
@@ -90,7 +90,7 @@ class BudgetController extends AbstractController
             ->findOneBy(['user' => $user, 'app' => $app]);
 
         if (!$budget) {
-            return new JsonResponse(['error' => 'No budget set for this app'], 404);
+            return new JsonResponse(['error' => 'Brak ustawionego budżetu dla tej aplikacji'], 404);
         }
 
         // Manually serialize the budget to ensure proper structure
@@ -118,14 +118,14 @@ class BudgetController extends AbstractController
         $user = $this->entityManager->getRepository(User::class)->find((int) $userId);
         
         if (!$user) {
-            return new JsonResponse(['error' => 'User not found'], 404);
+            return new JsonResponse(['error' => 'Użytkownik nie znaleziony'], 404);
         }
 
         $budget = $this->entityManager->getRepository(Budget::class)
             ->findOneBy(['user' => $user, 'app' => $app]);
 
         if (!$budget) {
-            return new JsonResponse(['error' => 'No budget set for this user and app'], 404);
+            return new JsonResponse(['error' => 'Brak ustawionego budżetu dla tego użytkownika i aplikacji'], 404);
         }
 
         // Debug: Log the budget data
@@ -151,7 +151,7 @@ class BudgetController extends AbstractController
         $currentUser = $this->security->getUser();
         
         if (!$currentUser) {
-            return new JsonResponse(['error' => 'User not authenticated'], 401);
+            return new JsonResponse(['error' => 'Użytkownik nie uwierzytelniony'], 401);
         }
 
         $data = json_decode($request->getContent(), true);
@@ -164,7 +164,7 @@ class BudgetController extends AbstractController
         $user = $this->entityManager->getRepository(User::class)->find($data['userId']);
         
         if (!$user) {
-            return new JsonResponse(['error' => 'User not found'], 404);
+            return new JsonResponse(['error' => 'Użytkownik nie znaleziony'], 404);
         }
 
         $app = $this->entityManager->getRepository(App::class)->find($data['appId']);
@@ -244,7 +244,7 @@ class BudgetController extends AbstractController
         $user = $this->security->getUser();
         
         if (!$user) {
-            return new JsonResponse(['error' => 'User not authenticated'], 401);
+            return new JsonResponse(['error' => 'Użytkownik nie uwierzytelniony'], 401);
         }
 
         $budgetId = (int) $id;
@@ -297,7 +297,7 @@ class BudgetController extends AbstractController
         $user = $this->security->getUser();
         
         if (!$user) {
-            return new JsonResponse(['error' => 'User not authenticated'], 401);
+            return new JsonResponse(['error' => 'Użytkownik nie uwierzytelniony'], 401);
         }
 
         $budget = $this->entityManager->getRepository(Budget::class)->find((int) $id);

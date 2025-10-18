@@ -38,28 +38,28 @@ class OrdersController extends AbstractController
         $user = $this->getUser();
         
         if (!$user) {
-            return $this->json(['error' => 'Authentication required'], Response::HTTP_UNAUTHORIZED);
+            return $this->json(['error' => 'Wymagane uwierzytelnienie'], Response::HTTP_UNAUTHORIZED);
         }
 
         try {
             $data = json_decode($request->getContent(), true);
             
             if (!$data) {
-                return $this->json(['error' => 'Invalid JSON data'], Response::HTTP_BAD_REQUEST);
+                return $this->json(['error' => 'Nieprawidłowe dane JSON'], Response::HTTP_BAD_REQUEST);
             }
 
             // Validate required fields
             $requiredFields = ['firstname', 'lastname', 'email', 'deliveryType', 'appId', 'cartItems'];
             foreach ($requiredFields as $field) {
                 if (!isset($data[$field]) || empty($data[$field])) {
-                    return $this->json(['error' => "Field '{$field}' is required"], Response::HTTP_BAD_REQUEST);
+                    return $this->json(['error' => "Pole '{$field}' jest wymagane"], Response::HTTP_BAD_REQUEST);
                 }
             }
 
             // Get the app
             $app = $this->entityManager->getRepository(App::class)->find($data['appId']);
             if (!$app) {
-                return $this->json(['error' => 'App not found'], Response::HTTP_NOT_FOUND);
+                return $this->json(['error' => 'Aplikacja nie znaleziona'], Response::HTTP_NOT_FOUND);
             }
 
             // Check if user has access to this app
@@ -71,7 +71,7 @@ class OrdersController extends AbstractController
             }
 
             if (!$hasAccess) {
-                return $this->json(['error' => 'Access denied to this app'], Response::HTTP_FORBIDDEN);
+                return $this->json(['error' => 'Odmowa dostępu do tej aplikacji'], Response::HTTP_FORBIDDEN);
             }
 
             // Process cart items and calculate total
@@ -79,18 +79,18 @@ class OrdersController extends AbstractController
             $cartItems = $data['cartItems'] ?? [];
             
             if (empty($cartItems)) {
-                return $this->json(['error' => 'Cart is empty'], Response::HTTP_BAD_REQUEST);
+                return $this->json(['error' => 'Koszyk jest pusty'], Response::HTTP_BAD_REQUEST);
             }
 
             // Validate and calculate total for each cart item
             foreach ($cartItems as $cartItem) {
                 if (!isset($cartItem['productId']) || !isset($cartItem['quantity'])) {
-                    return $this->json(['error' => 'Invalid cart item data'], Response::HTTP_BAD_REQUEST);
+                    return $this->json(['error' => 'Nieprawidłowe dane elementu koszyka'], Response::HTTP_BAD_REQUEST);
                 }
 
                 $product = $this->entityManager->getRepository(Product::class)->find($cartItem['productId']);
                 if (!$product) {
-                    return $this->json(['error' => 'Product not found: ' . $cartItem['productId']], Response::HTTP_NOT_FOUND);
+                    return $this->json(['error' => 'Produkt nie znaleziony: ' . $cartItem['productId']], Response::HTTP_NOT_FOUND);
                 }
 
                 $quantity = (int) $cartItem['quantity'];
@@ -102,7 +102,7 @@ class OrdersController extends AbstractController
             if (!$this->budgetService->hasSufficientBudget($user, $app, $cartTotal)) {
                 $currentBudget = $this->budgetService->getBudgetAmount($user, $app);
                 return $this->json([
-                    'error' => 'Insufficient budget',
+                    'error' => 'Niewystarczający budżet',
                     'message' => 'Niewystarczający budżet. Potrzebujesz ' . number_format($cartTotal, 2) . ' zł, a masz ' . number_format($currentBudget, 2) . ' zł',
                     'required' => $cartTotal,
                     'available' => $currentBudget,
@@ -124,7 +124,7 @@ class OrdersController extends AbstractController
             foreach ($cartItems as $cartItem) {
                 $product = $this->entityManager->getRepository(Product::class)->find($cartItem['productId']);
                 if (!$product) {
-                    return $this->json(['error' => 'Product not found'], Response::HTTP_BAD_REQUEST);
+                    return $this->json(['error' => 'Produkt nie znaleziony'], Response::HTTP_BAD_REQUEST);
                 }
                 
                 $quantity = (int) $cartItem['quantity'];
@@ -155,7 +155,7 @@ class OrdersController extends AbstractController
                 foreach ($errors as $error) {
                     $errorMessages[] = $error->getMessage();
                 }
-                return $this->json(['error' => 'Validation failed', 'details' => $errorMessages], Response::HTTP_BAD_REQUEST);
+                return $this->json(['error' => 'Walidacja nie powiodła się', 'details' => $errorMessages], Response::HTTP_BAD_REQUEST);
             }
 
             // Save to database
@@ -170,9 +170,9 @@ class OrdersController extends AbstractController
                 $this->entityManager->remove($order);
                 $this->entityManager->flush();
                 
-                error_log('Budget reduction failed, order rolled back: ' . $e->getMessage());
+                error_log('Redukcja budżetu nie powiodła się, order rolled back: ' . $e->getMessage());
                 return $this->json([
-                    'error' => 'Budget reduction failed',
+                    'error' => 'Redukcja budżetu nie powiodła się',
                     'message' => 'Nie udało się zaktualizować budżetu. Zamówienie zostało anulowane.'
                 ], Response::HTTP_INTERNAL_SERVER_ERROR);
             }
@@ -230,7 +230,7 @@ class OrdersController extends AbstractController
 
         } catch (\Exception $e) {
             return $this->json([
-                'error' => 'Failed to create order',
+                'error' => 'Nie udało się utworzyć zamówienia',
                 'message' => $e->getMessage()
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
@@ -246,12 +246,12 @@ class OrdersController extends AbstractController
         $user = $this->getUser();
         
         if (!$user) {
-            return $this->json(['error' => 'Authentication required'], Response::HTTP_UNAUTHORIZED);
+            return $this->json(['error' => 'Wymagane uwierzytelnienie'], Response::HTTP_UNAUTHORIZED);
         }
 
         // Check if user is requesting their own orders or has admin access
         if ($user->getId() !== $userId && !in_array('ROLE_ADMIN', $user->getRoles())) {
-            return $this->json(['error' => 'Access denied'], Response::HTTP_FORBIDDEN);
+            return $this->json(['error' => 'Odmowa dostępu'], Response::HTTP_FORBIDDEN);
         }
 
         try {
@@ -310,7 +310,7 @@ class OrdersController extends AbstractController
 
         } catch (\Exception $e) {
             return $this->json([
-                'error' => 'Failed to fetch orders',
+                'error' => 'Nie udało się pobrać zamówień',
                 'message' => $e->getMessage()
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
@@ -326,14 +326,14 @@ class OrdersController extends AbstractController
         $user = $this->getUser();
         
         if (!$user) {
-            return $this->json(['error' => 'Authentication required'], Response::HTTP_UNAUTHORIZED);
+            return $this->json(['error' => 'Wymagane uwierzytelnienie'], Response::HTTP_UNAUTHORIZED);
         }
 
         try {
             // Get the app
             $app = $this->entityManager->getRepository(App::class)->find($appId);
             if (!$app) {
-                return $this->json(['error' => 'App not found'], Response::HTTP_NOT_FOUND);
+                return $this->json(['error' => 'Aplikacja nie znaleziona'], Response::HTTP_NOT_FOUND);
             }
 
             // Check if user has access to this app
@@ -345,7 +345,7 @@ class OrdersController extends AbstractController
             }
 
             if (!$hasAccess) {
-                return $this->json(['error' => 'Access denied to this app'], Response::HTTP_FORBIDDEN);
+                return $this->json(['error' => 'Odmowa dostępu do tej aplikacji'], Response::HTTP_FORBIDDEN);
             }
 
             // Get all orders for this app with their products
@@ -434,7 +434,7 @@ class OrdersController extends AbstractController
 
         } catch (\Exception $e) {
             return $this->json([
-                'error' => 'Failed to fetch app orders',
+                'error' => 'Nie udało się pobrać zamówień aplikacji',
                 'message' => $e->getMessage()
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
@@ -450,19 +450,19 @@ class OrdersController extends AbstractController
         $user = $this->getUser();
         
         if (!$user) {
-            return $this->json(['error' => 'Authentication required'], Response::HTTP_UNAUTHORIZED);
+            return $this->json(['error' => 'Wymagane uwierzytelnienie'], Response::HTTP_UNAUTHORIZED);
         }
 
         try {
             $order = $this->entityManager->getRepository(Order::class)->find($id);
             
             if (!$order) {
-                return $this->json(['error' => 'Order not found'], Response::HTTP_NOT_FOUND);
+                return $this->json(['error' => 'Zamówienie nie znalezione'], Response::HTTP_NOT_FOUND);
             }
 
             // Check if user owns this order or has admin access
             if ($order->getUser()->getId() !== $user->getId() && !in_array('ROLE_ADMIN', $user->getRoles())) {
-                return $this->json(['error' => 'Access denied'], Response::HTTP_FORBIDDEN);
+                return $this->json(['error' => 'Odmowa dostępu'], Response::HTTP_FORBIDDEN);
             }
 
             $jsonData = $this->serializer->serialize($order, 'json', [
@@ -517,7 +517,7 @@ class OrdersController extends AbstractController
 
         } catch (\Exception $e) {
             return $this->json([
-                'error' => 'Failed to fetch order',
+                'error' => 'Nie udało się pobrać zamówienia',
                 'message' => $e->getMessage()
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
         }

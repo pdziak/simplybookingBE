@@ -1,0 +1,5 @@
+# Content controller with /api prefix
+content_controller:
+    resource: App\Controller\ContentController
+    type: attribute
+    prefix: /api

@@ -31,17 +31,17 @@ class UploadController extends AbstractController
         $uploadedFile = $request->files->get('logo');
         
         if (!$uploadedFile) {
-            return $this->json(['error' => 'No file uploaded'], Response::HTTP_BAD_REQUEST);
+            return $this->json(['error' => 'Nie przesłano pliku'], Response::HTTP_BAD_REQUEST);
         }
 
         // Check if file was uploaded successfully
         if (!$uploadedFile->isValid()) {
-            return $this->json(['error' => 'File upload failed: ' . $uploadedFile->getErrorMessage()], Response::HTTP_BAD_REQUEST);
+            return $this->json(['error' => 'Przesyłanie pliku nie powiodło się: ' . $uploadedFile->getErrorMessage()], Response::HTTP_BAD_REQUEST);
         }
 
         // Check if file exists and is readable
         if (!$uploadedFile->getPathname() || !file_exists($uploadedFile->getPathname())) {
-            return $this->json(['error' => 'Uploaded file is not accessible'], Response::HTTP_BAD_REQUEST);
+            return $this->json(['error' => 'Przesłany plik nie jest dostępny'], Response::HTTP_BAD_REQUEST);
         }
 
         // Get file size safely
@@ -52,7 +52,7 @@ class UploadController extends AbstractController
 
         // Basic validation
         if ($fileSize === 0) {
-            return $this->json(['error' => 'File is empty'], Response::HTTP_UNPROCESSABLE_ENTITY);
+            return $this->json(['error' => 'Plik jest pusty'], Response::HTTP_UNPROCESSABLE_ENTITY);
         }
 
         if ($fileSize > 2 * 1024 * 1024) { // 2MB
@@ -63,7 +63,7 @@ class UploadController extends AbstractController
         $mimeType = $uploadedFile->getMimeType();
         $allowedMimeTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
         if (!in_array($mimeType, $allowedMimeTypes)) {
-            return $this->json(['error' => 'Invalid file type. Allowed types: JPEG, PNG, GIF, WebP'], Response::HTTP_UNPROCESSABLE_ENTITY);
+            return $this->json(['error' => 'Nieprawidłowy typ pliku. Dozwolone typy: JPEG, PNG, GIF, WebP'], Response::HTTP_UNPROCESSABLE_ENTITY);
         }
 
         // Generate a unique filename
@@ -116,17 +116,17 @@ class UploadController extends AbstractController
         $uploadedFile = $request->files->get('image');
         
         if (!$uploadedFile) {
-            return $this->json(['error' => 'No file uploaded'], Response::HTTP_BAD_REQUEST);
+            return $this->json(['error' => 'Nie przesłano pliku'], Response::HTTP_BAD_REQUEST);
         }
 
         // Check if file was uploaded successfully
         if (!$uploadedFile->isValid()) {
-            return $this->json(['error' => 'File upload failed: ' . $uploadedFile->getErrorMessage()], Response::HTTP_BAD_REQUEST);
+            return $this->json(['error' => 'Przesyłanie pliku nie powiodło się: ' . $uploadedFile->getErrorMessage()], Response::HTTP_BAD_REQUEST);
         }
 
         // Check if file exists and is readable
         if (!$uploadedFile->getPathname() || !file_exists($uploadedFile->getPathname())) {
-            return $this->json(['error' => 'Uploaded file is not accessible'], Response::HTTP_BAD_REQUEST);
+            return $this->json(['error' => 'Przesłany plik nie jest dostępny'], Response::HTTP_BAD_REQUEST);
         }
 
         // Get file size safely
@@ -137,18 +137,18 @@ class UploadController extends AbstractController
 
         // Basic validation
         if ($fileSize === 0) {
-            return $this->json(['error' => 'File is empty'], Response::HTTP_UNPROCESSABLE_ENTITY);
+            return $this->json(['error' => 'Plik jest pusty'], Response::HTTP_UNPROCESSABLE_ENTITY);
         }
 
         if ($fileSize > 5 * 1024 * 1024) { // 5MB for product images
-            return $this->json(['error' => 'File is too large. Maximum size is 5MB'], Response::HTTP_UNPROCESSABLE_ENTITY);
+            return $this->json(['error' => 'Plik jest za duży. Maksymalny rozmiar to 5MB'], Response::HTTP_UNPROCESSABLE_ENTITY);
         }
 
         // Check MIME type
         $mimeType = $uploadedFile->getMimeType();
         $allowedMimeTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
         if (!in_array($mimeType, $allowedMimeTypes)) {
-            return $this->json(['error' => 'Invalid file type. Allowed types: JPEG, PNG, GIF, WebP'], Response::HTTP_UNPROCESSABLE_ENTITY);
+            return $this->json(['error' => 'Nieprawidłowy typ pliku. Dozwolone typy: JPEG, PNG, GIF, WebP'], Response::HTTP_UNPROCESSABLE_ENTITY);
         }
 
         // Generate a unique filename
