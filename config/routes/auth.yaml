@@ -1,9 +1,9 @@
 oauth_google:
-    path: /auth/google
+    path: /api/auth/google
     controller: App\Controller\OAuthController::googleOAuth
     methods: [GET]
 
 oauth_google_callback:
-    path: /auth/google/callback
+    path: /api/auth/google/callback
     controller: App\Controller\OAuthController::googleOAuthCallback
     methods: [GET]
