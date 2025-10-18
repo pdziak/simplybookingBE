@@ -1,16 +1,19 @@
+# config/packages/nelmio_cors.yaml
 nelmio_cors:
     defaults:
-        origin_regex: false
-        allow_origin: ['http://benefitowo.webdev:3000', 'http://localhost:3000', 'http://127.0.0.1:3000', 'http://benefitowo.webdev:8080', 'http://localhost:8080', 'http://127.0.0.1:8080', 'https://benefitowo.pl']
-        allow_methods: ['GET', 'OPTIONS', 'POST', 'PUT', 'PATCH', 'DELETE']
-        allow_headers: ['Content-Type', 'Authorization', 'X-Requested-With']
-        expose_headers: ['Link']
-        max_age: 3600
+        origin_regex: true
+        allow_origin:
+            # dev: localhost / 127.0.0.1 with :3000 or :8080
+            - '^https?://(localhost|127\.0\.0\.1)(:(3000|8080))?$'
+            # dev: benefitowo.webdev on :3000 or :8080
+            - '^http://benefitowo\.webdev:(3000|8080)$'
+            # prod: benefitowo.pl and ANY subdomain (also the bare domain)
+            - '^https://([a-z0-9-]+\.)*benefitowo\.pl$'
+        allow_methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS']
+        allow_headers: ['Content-Type', 'Authorization', 'X-Requested-With', 'Origin', 'Accept']
+        expose_headers: ['Link', 'Location', 'Content-Disposition']
+        max_age: 86400
         allow_credentials: true
+
     paths:
-        '^/':
-            allow_origin: ['http://benefitowo.webdev:3000', 'http://localhost:3000', 'http://127.0.0.1:3000', 'http://benefitowo.webdev:8080', 'http://localhost:8080', 'http://127.0.0.1:8080', 'https://benefitowo.pl']
-            allow_headers: ['Content-Type', 'Authorization', 'X-Requested-With']
-            allow_methods: ['GET', 'OPTIONS', 'POST', 'PUT', 'PATCH', 'DELETE']
-            max_age: 3600
-            allow_credentials: true
+        '^/': ~
