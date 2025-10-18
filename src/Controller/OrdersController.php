@@ -337,14 +337,28 @@ class OrdersController extends AbstractController
                 return $this->json(['error' => 'Access denied to this app'], Response::HTTP_FORBIDDEN);
             }
 
-            // Get all orders for this app
+            // Get all orders for this app with their products
             $orders = $this->entityManager->getRepository(Order::class)
                 ->createQueryBuilder('o')
+                ->leftJoin('o.orderProducts', 'op')
+                ->leftJoin('op.product', 'p')
+                ->leftJoin('o.user', 'u')
+                ->leftJoin('o.app', 'a')
+                ->addSelect('op', 'p', 'u', 'a')
                 ->where('o.app = :appId')
                 ->setParameter('appId', $appId)
                 ->orderBy('o.createdAt', 'DESC')
                 ->getQuery()
                 ->getResult();
+
+            // Debug: Log the orders data
+            error_log('Orders found: ' . count($orders));
+            foreach ($orders as $order) {
+                error_log('Order ' . $order->getId() . ' has ' . $order->getOrderProducts()->count() . ' products');
+                foreach ($order->getOrderProducts() as $op) {
+                    error_log('OrderProduct: ' . $op->getId() . ', Product: ' . ($op->getProduct() ? $op->getProduct()->getId() : 'NULL'));
+                }
+            }
 
             $jsonData = $this->serializer->serialize($orders, 'json', [
                 'groups' => ['order:read'],
