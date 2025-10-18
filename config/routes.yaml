@@ -13,16 +13,8 @@ auth_controller:
     type: attribute
     prefix: /api
 
-# Custom API Platform replacement controllers (without /api prefix)
-custom_controllers:
-    resource:
-        path: ../src/CustomController/
-        namespace: App\CustomController
-    type: attribute
-    prefix: ''
-
-# Subdomain products controller (without /api prefix)
+# Subdomain products controller (with /api prefix)
 subdomain_products_controller:
     resource: App\ProductsController\SubdomainProductController
     type: attribute
-    prefix: ''
+    prefix: /api

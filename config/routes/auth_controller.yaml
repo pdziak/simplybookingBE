@@ -3,4 +3,4 @@ auth_controller:
         path: ../../src/AuthController/
         namespace: App\AuthController
     type: attribute
-    prefix: ''
+    prefix: /api

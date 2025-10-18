@@ -1,5 +1,5 @@
-# API Platform routes without prefix for entities
+# API Platform routes with /api prefix for entities
 api_platform:
     resource: '../src/Entity/'
     type: api_platform
-    prefix: ''
+    prefix: /api

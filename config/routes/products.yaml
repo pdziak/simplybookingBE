@@ -1,5 +1,5 @@
-# Products controller without /api prefix
+# Products controller with /api prefix
 products_controller:
     resource: App\ProductsController\ProductController
     type: attribute
-    prefix: ''
+    prefix: /api

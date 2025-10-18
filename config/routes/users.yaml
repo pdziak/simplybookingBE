@@ -1,5 +1,5 @@
-# Users controller without /api prefix
+# Users controller with /api prefix
 users_controller:
     resource: App\UsersController\UserController
     type: attribute
-    prefix: ''
+    prefix: /api
