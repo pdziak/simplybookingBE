@@ -102,7 +102,10 @@ class OrdersController extends AbstractController
                 $currentBudget = $this->budgetService->getBudgetAmount($user, $app);
                 return $this->json([
                     'error' => 'Insufficient budget',
-                    'message' => 'Required: ' . number_format($cartTotal, 2) . ' zł, Available: ' . number_format($currentBudget, 2) . ' zł'
+                    'message' => 'Niewystarczający budżet. Potrzebujesz ' . number_format($cartTotal, 2) . ' zł, a masz ' . number_format($currentBudget, 2) . ' zł',
+                    'required' => $cartTotal,
+                    'available' => $currentBudget,
+                    'shortfall' => $cartTotal - $currentBudget
                 ], Response::HTTP_BAD_REQUEST);
             }
 
@@ -134,9 +137,15 @@ class OrdersController extends AbstractController
             try {
                 $this->budgetService->reduceBudget($user, $app, $cartTotal);
             } catch (\Exception $e) {
-                // If budget reduction fails, we should ideally rollback the order
-                // For now, we'll log the error and continue
-                error_log('Budget reduction failed: ' . $e->getMessage());
+                // If budget reduction fails, rollback the order
+                $this->entityManager->remove($order);
+                $this->entityManager->flush();
+                
+                error_log('Budget reduction failed, order rolled back: ' . $e->getMessage());
+                return $this->json([
+                    'error' => 'Budget reduction failed',
+                    'message' => 'Nie udało się zaktualizować budżetu. Zamówienie zostało anulowane.'
+                ], Response::HTTP_INTERNAL_SERVER_ERROR);
             }
 
             // Return the created order
