@@ -53,9 +53,9 @@ class BudgetController extends AbstractController
     }
 
     #[Route('/app/{appId}', name: 'budget_app', methods: ['GET'])]
-    public function getAppBudgets(int $appId): JsonResponse
+    public function getAppBudgets(string $appId): JsonResponse
     {
-        $app = $this->entityManager->getRepository(App::class)->find($appId);
+        $app = $this->entityManager->getRepository(App::class)->find((int) $appId);
         
         if (!$app) {
             return new JsonResponse(['error' => 'App not found'], 404);
@@ -71,7 +71,7 @@ class BudgetController extends AbstractController
     }
 
     #[Route('/app/{appId}/user', name: 'budget_app_user', methods: ['GET'])]
-    public function getBudgetForApp(int $appId): JsonResponse
+    public function getBudgetForApp(string $appId): JsonResponse
     {
         /** @var User $user */
         $user = $this->security->getUser();
@@ -80,7 +80,7 @@ class BudgetController extends AbstractController
             return new JsonResponse(['error' => 'User not authenticated'], 401);
         }
 
-        $app = $this->entityManager->getRepository(App::class)->find($appId);
+        $app = $this->entityManager->getRepository(App::class)->find((int) $appId);
         
         if (!$app) {
             return new JsonResponse(['error' => 'App not found'], 404);
@@ -89,22 +89,33 @@ class BudgetController extends AbstractController
         $budget = $this->entityManager->getRepository(Budget::class)
             ->findOneBy(['user' => $user, 'app' => $app]);
 
-        return new JsonResponse([
-            'data' => $budget,
-            'message' => $budget ? 'Budget found' : 'No budget set for this app'
-        ]);
+        if (!$budget) {
+            return new JsonResponse(['error' => 'No budget set for this app'], 404);
+        }
+
+        // Manually serialize the budget to ensure proper structure
+        $budgetData = [
+            'id' => $budget->getId(),
+            'userId' => $budget->getUser()->getId(),
+            'appId' => $budget->getApp()->getId(),
+            'budgetAmount' => $budget->getBudgetAmount(),
+            'createdAt' => $budget->getCreatedAt()->format('Y-m-d\TH:i:s\Z'),
+            'updatedAt' => $budget->getUpdatedAt() ? $budget->getUpdatedAt()->format('Y-m-d\TH:i:s\Z') : null
+        ];
+
+        return new JsonResponse($budgetData);
     }
 
     #[Route('/app/{appId}/user/{userId}', name: 'budget_app_user_specific', methods: ['GET'])]
-    public function getUserBudgetForApp(int $appId, int $userId): JsonResponse
+    public function getUserBudgetForApp(string $appId, string $userId): JsonResponse
     {
-        $app = $this->entityManager->getRepository(App::class)->find($appId);
+        $app = $this->entityManager->getRepository(App::class)->find((int) $appId);
         
         if (!$app) {
             return new JsonResponse(['error' => 'App not found'], 404);
         }
 
-        $user = $this->entityManager->getRepository(User::class)->find($userId);
+        $user = $this->entityManager->getRepository(User::class)->find((int) $userId);
         
         if (!$user) {
             return new JsonResponse(['error' => 'User not found'], 404);
@@ -113,26 +124,47 @@ class BudgetController extends AbstractController
         $budget = $this->entityManager->getRepository(Budget::class)
             ->findOneBy(['user' => $user, 'app' => $app]);
 
-        return new JsonResponse([
-            'data' => $budget,
-            'message' => $budget ? 'Budget found' : 'No budget set for this user and app'
-        ]);
+        if (!$budget) {
+            return new JsonResponse(['error' => 'No budget set for this user and app'], 404);
+        }
+
+        // Debug: Log the budget data
+        error_log('Budget found: ID=' . $budget->getId() . ', Amount=' . $budget->getBudgetAmount() . ', User=' . $user->getId() . ', App=' . $app->getId());
+
+        // Manually serialize the budget to ensure proper structure
+        $budgetData = [
+            'id' => $budget->getId(),
+            'userId' => $budget->getUser()->getId(),
+            'appId' => $budget->getApp()->getId(),
+            'budgetAmount' => $budget->getBudgetAmount(),
+            'createdAt' => $budget->getCreatedAt()->format('Y-m-d\TH:i:s\Z'),
+            'updatedAt' => $budget->getUpdatedAt() ? $budget->getUpdatedAt()->format('Y-m-d\TH:i:s\Z') : null
+        ];
+
+        return new JsonResponse($budgetData);
     }
 
     #[Route('', name: 'budget_create', methods: ['POST'])]
     public function createBudget(Request $request): JsonResponse
     {
-        /** @var User $user */
-        $user = $this->security->getUser();
+        /** @var User $currentUser */
+        $currentUser = $this->security->getUser();
         
-        if (!$user) {
+        if (!$currentUser) {
             return new JsonResponse(['error' => 'User not authenticated'], 401);
         }
 
         $data = json_decode($request->getContent(), true);
         
-        if (!isset($data['appId']) || !isset($data['budget'])) {
-            return new JsonResponse(['error' => 'appId and budget are required'], 400);
+        if (!isset($data['appId']) || !isset($data['budget']) || !isset($data['userId'])) {
+            return new JsonResponse(['error' => 'appId, userId and budget are required'], 400);
+        }
+
+        // Get the user for whom the budget is being created
+        $user = $this->entityManager->getRepository(User::class)->find($data['userId']);
+        
+        if (!$user) {
+            return new JsonResponse(['error' => 'User not found'], 404);
         }
 
         $app = $this->entityManager->getRepository(App::class)->find($data['appId']);
@@ -146,7 +178,32 @@ class BudgetController extends AbstractController
             ->findOneBy(['user' => $user, 'app' => $app]);
 
         if ($existingBudget) {
-            return new JsonResponse(['error' => 'Budget already exists for this app'], 409);
+            // Instead of returning an error, update the existing budget
+            $existingBudget->setBudget((string) $data['budget']);
+            
+            $errors = $this->validator->validate($existingBudget);
+            
+            if (count($errors) > 0) {
+                $errorMessages = [];
+                foreach ($errors as $error) {
+                    $errorMessages[] = $error->getMessage();
+                }
+                return new JsonResponse(['error' => 'Validation failed', 'details' => $errorMessages], 400);
+            }
+
+            $this->entityManager->flush();
+
+            // Manually serialize the updated budget
+            $budgetData = [
+                'id' => $existingBudget->getId(),
+                'userId' => $existingBudget->getUser()->getId(),
+                'appId' => $existingBudget->getApp()->getId(),
+                'budgetAmount' => $existingBudget->getBudgetAmount(),
+                'createdAt' => $existingBudget->getCreatedAt()->format('Y-m-d\TH:i:s\Z'),
+                'updatedAt' => $existingBudget->getUpdatedAt() ? $existingBudget->getUpdatedAt()->format('Y-m-d\TH:i:s\Z') : null
+            ];
+
+            return new JsonResponse($budgetData, 200);
         }
 
         $budget = new Budget();
@@ -167,14 +224,21 @@ class BudgetController extends AbstractController
         $this->entityManager->persist($budget);
         $this->entityManager->flush();
 
-        return new JsonResponse([
-            'data' => $budget,
-            'message' => 'Budget created successfully'
-        ], 201);
+        // Manually serialize the created budget
+        $budgetData = [
+            'id' => $budget->getId(),
+            'userId' => $budget->getUser()->getId(),
+            'appId' => $budget->getApp()->getId(),
+            'budgetAmount' => $budget->getBudgetAmount(),
+            'createdAt' => $budget->getCreatedAt()->format('Y-m-d\TH:i:s\Z'),
+            'updatedAt' => $budget->getUpdatedAt() ? $budget->getUpdatedAt()->format('Y-m-d\TH:i:s\Z') : null
+        ];
+
+        return new JsonResponse($budgetData, 201);
     }
 
     #[Route('/{id}', name: 'budget_update', methods: ['PUT'])]
-    public function updateBudget(int $id, Request $request): JsonResponse
+    public function updateBudget(string $id, Request $request): JsonResponse
     {
         /** @var User $user */
         $user = $this->security->getUser();
@@ -183,7 +247,8 @@ class BudgetController extends AbstractController
             return new JsonResponse(['error' => 'User not authenticated'], 401);
         }
 
-        $budget = $this->entityManager->getRepository(Budget::class)->find($id);
+        $budgetId = (int) $id;
+        $budget = $this->entityManager->getRepository(Budget::class)->find($budgetId);
         
         if (!$budget) {
             return new JsonResponse(['error' => 'Budget not found'], 404);
@@ -219,7 +284,7 @@ class BudgetController extends AbstractController
     }
 
     #[Route('/{id}', name: 'budget_delete', methods: ['DELETE'])]
-    public function deleteBudget(int $id): JsonResponse
+    public function deleteBudget(string $id): JsonResponse
     {
         /** @var User $user */
         $user = $this->security->getUser();
@@ -228,7 +293,7 @@ class BudgetController extends AbstractController
             return new JsonResponse(['error' => 'User not authenticated'], 401);
         }
 
-        $budget = $this->entityManager->getRepository(Budget::class)->find($id);
+        $budget = $this->entityManager->getRepository(Budget::class)->find((int) $id);
         
         if (!$budget) {
             return new JsonResponse(['error' => 'Budget not found'], 404);

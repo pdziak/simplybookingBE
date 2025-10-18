@@ -32,7 +32,7 @@ class Budget
     #[Assert\NotBlank(message: 'Budget amount is required')]
     #[Assert\Type(type: 'numeric', message: 'Budget amount must be a number')]
     #[Assert\GreaterThanOrEqual(value: 0, message: 'Budget amount must be greater than or equal to 0')]
-    #[Groups(['budget:read', 'budget:write'])]
+    #[Groups(['budget:write'])]
     private string $budget;
 
     #[ORM\Column(type: 'datetime_immutable')]
@@ -78,6 +78,12 @@ class Budget
     public function getBudget(): string
     {
         return $this->budget;
+    }
+
+    #[Groups(['budget:read'])]
+    public function getBudgetAmount(): float
+    {
+        return (float) $this->budget;
     }
 
     public function setBudget(string $budget): static
