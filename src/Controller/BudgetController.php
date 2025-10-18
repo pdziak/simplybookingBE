@@ -277,10 +277,17 @@ class BudgetController extends AbstractController
 
         $this->entityManager->flush();
 
-        return new JsonResponse([
-            'data' => $budget,
-            'message' => 'Budget updated successfully'
-        ]);
+        // Manually serialize the updated budget
+        $budgetData = [
+            'id' => $budget->getId(),
+            'userId' => $budget->getUser()->getId(),
+            'appId' => $budget->getApp()->getId(),
+            'budgetAmount' => $budget->getBudgetAmount(),
+            'createdAt' => $budget->getCreatedAt()->format('Y-m-d\TH:i:s\Z'),
+            'updatedAt' => $budget->getUpdatedAt() ? $budget->getUpdatedAt()->format('Y-m-d\TH:i:s\Z') : null
+        ];
+
+        return new JsonResponse($budgetData, 200);
     }
 
     #[Route('/{id}', name: 'budget_delete', methods: ['DELETE'])]

@@ -305,6 +305,116 @@ class OrdersController extends AbstractController
         }
     }
 
+    #[Route('/app/{appId}', name: 'get_app_orders', methods: ['GET', 'OPTIONS'])]
+    public function getAppOrders(int $appId, Request $request): JsonResponse
+    {
+        if ($request->isMethod('OPTIONS')) {
+            return new JsonResponse();
+        }
+
+        $user = $this->getUser();
+        
+        if (!$user) {
+            return $this->json(['error' => 'Authentication required'], Response::HTTP_UNAUTHORIZED);
+        }
+
+        try {
+            // Get the app
+            $app = $this->entityManager->getRepository(App::class)->find($appId);
+            if (!$app) {
+                return $this->json(['error' => 'App not found'], Response::HTTP_NOT_FOUND);
+            }
+
+            // Check if user has access to this app
+            $hasAccess = false;
+            if ($app->getOwner()->getId() === $user->getId()) {
+                $hasAccess = true;
+            } else {
+                $hasAccess = $app->getAssignedUsers()->contains($user);
+            }
+
+            if (!$hasAccess) {
+                return $this->json(['error' => 'Access denied to this app'], Response::HTTP_FORBIDDEN);
+            }
+
+            // Get all orders for this app
+            $orders = $this->entityManager->getRepository(Order::class)
+                ->createQueryBuilder('o')
+                ->where('o.app = :appId')
+                ->setParameter('appId', $appId)
+                ->orderBy('o.createdAt', 'DESC')
+                ->getQuery()
+                ->getResult();
+
+            $jsonData = $this->serializer->serialize($orders, 'json', [
+                'groups' => ['order:read'],
+                'circular_reference_handler' => function ($object, $format, $context) {
+                    if ($object instanceof \App\Entity\Order) {
+                        return [
+                            'id' => $object->getId(),
+                            'firstname' => $object->getFirstname(),
+                            'lastname' => $object->getLastname(),
+                            'email' => $object->getEmail(),
+                            'shippingLocation' => $object->getShippingLocation(),
+                            'shippingAddress' => $object->getShippingAddress(),
+                            'createdAt' => $object->getCreatedAt()->format('Y-m-d H:i:s'),
+                            'modifiedAt' => $object->getModifiedAt()?->format('Y-m-d H:i:s'),
+                            'fullName' => $object->getFullName(),
+                            'deliveryTypeDisplay' => $object->getDeliveryTypeDisplay(),
+                            'orderProducts' => $object->getOrderProducts()->map(function($orderProduct) {
+                                return [
+                                    'id' => $orderProduct->getId(),
+                                    'product' => [
+                                        'id' => $orderProduct->getProduct()->getId(),
+                                        'name' => $orderProduct->getProduct()->getProductName(),
+                                        'price' => $orderProduct->getProduct()->getProductPrice()
+                                    ],
+                                    'quantity' => $orderProduct->getQuantity(),
+                                    'unitPrice' => $orderProduct->getUnitPrice(),
+                                    'totalPrice' => $orderProduct->getTotalPrice()
+                                ];
+                            })->toArray(),
+                            'user' => [
+                                'id' => $object->getUser()->getId(),
+                                'email' => $object->getUser()->getEmail(),
+                                'firstName' => $object->getUser()->getFirstName(),
+                                'lastName' => $object->getUser()->getLastName()
+                            ],
+                            'app' => [
+                                'id' => $object->getApp()->getId(),
+                                'title' => $object->getApp()->getTitle(),
+                                'slug' => $object->getApp()->getSlug()
+                            ]
+                        ];
+                    } elseif ($object instanceof \App\Entity\User) {
+                        return [
+                            'id' => $object->getId(),
+                            'email' => $object->getEmail(),
+                            'firstName' => $object->getFirstName(),
+                            'lastName' => $object->getLastName()
+                        ];
+                    } elseif ($object instanceof \App\Entity\App) {
+                        return [
+                            'id' => $object->getId(),
+                            'title' => $object->getTitle(),
+                            'slug' => $object->getSlug()
+                        ];
+                    }
+                    
+                    return method_exists($object, 'getId') ? $object->getId() : null;
+                }
+            ]);
+
+            return new JsonResponse($jsonData, Response::HTTP_OK, [], true);
+
+        } catch (\Exception $e) {
+            return $this->json([
+                'error' => 'Failed to fetch app orders',
+                'message' => $e->getMessage()
+            ], Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
+    }
+
     #[Route('/{id}', name: 'get_order', methods: ['GET', 'OPTIONS'])]
     public function getOrder(int $id, Request $request): JsonResponse
     {
