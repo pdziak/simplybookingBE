@@ -191,8 +191,8 @@ class OrdersController extends AbstractController
                                         'price' => $orderProduct->getProduct()->getProductPrice()
                                     ],
                                     'quantity' => $orderProduct->getQuantity(),
-                                    'unitPrice' => $orderProduct->getUnitPrice(),
-                                    'totalPrice' => $orderProduct->getTotalPrice()
+                                    'unitPrice' => (float) $orderProduct->getUnitPrice(),
+                                    'totalPrice' => (float) $orderProduct->getTotalPrice()
                                 ];
                             })->toArray()
                         ];
@@ -271,8 +271,8 @@ class OrdersController extends AbstractController
                                         'price' => $orderProduct->getProduct()->getProductPrice()
                                     ],
                                     'quantity' => $orderProduct->getQuantity(),
-                                    'unitPrice' => $orderProduct->getUnitPrice(),
-                                    'totalPrice' => $orderProduct->getTotalPrice()
+                                    'unitPrice' => (float) $orderProduct->getUnitPrice(),
+                                    'totalPrice' => (float) $orderProduct->getTotalPrice()
                                 ];
                             })->toArray()
                         ];
@@ -370,8 +370,8 @@ class OrdersController extends AbstractController
                                         'price' => $orderProduct->getProduct()->getProductPrice()
                                     ],
                                     'quantity' => $orderProduct->getQuantity(),
-                                    'unitPrice' => $orderProduct->getUnitPrice(),
-                                    'totalPrice' => $orderProduct->getTotalPrice()
+                                    'unitPrice' => (float) $orderProduct->getUnitPrice(),
+                                    'totalPrice' => (float) $orderProduct->getTotalPrice()
                                 ];
                             })->toArray(),
                             'user' => [
@@ -464,8 +464,8 @@ class OrdersController extends AbstractController
                                         'price' => $orderProduct->getProduct()->getProductPrice()
                                     ],
                                     'quantity' => $orderProduct->getQuantity(),
-                                    'unitPrice' => $orderProduct->getUnitPrice(),
-                                    'totalPrice' => $orderProduct->getTotalPrice()
+                                    'unitPrice' => (float) $orderProduct->getUnitPrice(),
+                                    'totalPrice' => (float) $orderProduct->getTotalPrice()
                                 ];
                             })->toArray()
                         ];
