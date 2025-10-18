@@ -107,7 +107,7 @@ class AuthController extends AbstractController
 
         // Return success message without JWT token - user needs to verify email first
         $response = new JsonResponse([
-            'message' => 'Account created successfully. Please check your email to verify your account.',
+            'message' => 'Konto zostało utworzone pomyślnie. Sprawdź swój email, aby potwierdzić konto.',
             'user' => [
                 'id' => $user->getId(),
                 'email' => $user->getEmail(),
@@ -297,7 +297,7 @@ class AuthController extends AbstractController
 
         if (!$token) {
             return new JsonResponse([
-                'error' => 'Verification token is required'
+                'error' => 'Token weryfikacyjny jest wymagany'
             ], Response::HTTP_BAD_REQUEST);
         }
 
@@ -312,20 +312,20 @@ class AuthController extends AbstractController
                 // This looks like a valid token format, but user might be already verified
                 // Let's provide a more helpful message
                 return new JsonResponse([
-                    'error' => 'This verification link has already been used or has expired. If you need to verify your email, please request a new verification email.',
+                    'error' => 'Ten link weryfikacyjny został już użyty lub wygasł. Jeśli potrzebujesz potwierdzić swój email, poproś o nowy email weryfikacyjny.',
                     'code' => 'TOKEN_ALREADY_USED'
                 ], Response::HTTP_BAD_REQUEST);
             }
             
             return new JsonResponse([
-                'error' => 'Invalid verification token'
+                'error' => 'Nieprawidłowy token weryfikacyjny'
             ], Response::HTTP_BAD_REQUEST);
         }
 
         // Check if user is already verified
         if ($user->isEmailVerified()) {
             return new JsonResponse([
-                'message' => 'Your email has already been verified! You can log in to your account.',
+                'message' => 'Twój email został już potwierdzony! Możesz się zalogować do swojego konta.',
                 'user' => [
                     'id' => $user->getId(),
                     'email' => $user->getEmail(),
@@ -341,7 +341,7 @@ class AuthController extends AbstractController
         // Check if token is still valid
         if (!$user->isEmailVerificationTokenValid()) {
             return new JsonResponse([
-                'error' => 'Verification token has expired. Please request a new verification email.',
+                'error' => 'Token weryfikacyjny wygasł. Poproś o nowy email weryfikacyjny.',
                 'code' => 'TOKEN_EXPIRED'
             ], Response::HTTP_BAD_REQUEST);
         }
@@ -354,7 +354,7 @@ class AuthController extends AbstractController
         $this->entityManager->flush();
 
         return new JsonResponse([
-            'message' => 'Email verified successfully! You can now log in to your account.',
+            'message' => 'Email został pomyślnie potwierdzony! Możesz się teraz zalogować do swojego konta.',
             'user' => [
                 'id' => $user->getId(),
                 'email' => $user->getEmail(),
@@ -377,7 +377,7 @@ class AuthController extends AbstractController
 
         if (!$email) {
             return new JsonResponse([
-                'error' => 'Email address is required'
+                'error' => 'Adres email jest wymagany'
             ], Response::HTTP_BAD_REQUEST);
         }
 
@@ -387,14 +387,14 @@ class AuthController extends AbstractController
 
         if (!$user) {
             return new JsonResponse([
-                'error' => 'User not found'
+                'error' => 'Użytkownik nie został znaleziony'
             ], Response::HTTP_NOT_FOUND);
         }
 
         // Check if user is already verified
         if ($user->isEmailVerified()) {
             return new JsonResponse([
-                'error' => 'Email is already verified'
+                'error' => 'Email został już potwierdzony'
             ], Response::HTTP_BAD_REQUEST);
         }
 
@@ -405,12 +405,12 @@ class AuthController extends AbstractController
         } catch (\Exception $e) {
             error_log('Failed to resend verification email: ' . $e->getMessage());
             return new JsonResponse([
-                'error' => 'Failed to send verification email'
+                'error' => 'Nie udało się wysłać emaila weryfikacyjnego'
             ], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
 
         return new JsonResponse([
-            'message' => 'Verification email sent successfully'
+            'message' => 'Email weryfikacyjny został wysłany pomyślnie'
         ], Response::HTTP_OK);
     }
 

@@ -41,11 +41,12 @@ class EmailVerificationService
         $email = (new Email())
             ->from('noreply@benefitowo.com')
             ->to($user->getEmail())
-            ->subject('Verify your email address - Benefitowo')
+            ->subject('Potwierdź swój adres email - Benefitowo')
             ->html($this->twig->render('emails/verification.html.twig', [
                 'user' => $user,
                 'verificationUrl' => $verificationUrl,
-                'expiresAt' => $expiresAt
+                'expiresAt' => $expiresAt,
+                'appUrl' => $this->appUrl
             ]));
 
         $this->mailer->send($email);

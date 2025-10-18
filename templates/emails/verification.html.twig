@@ -3,8 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Verify your email address</title>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>Potwierdź swój adres email</title>
     <style>
+        /* Reset all link styles */
+        a, a:link, a:visited, a:hover, a:active {
+            color: #000 !important;
+            text-decoration: underline !important;
+        }
+        
         body {
             font-family: Arial, sans-serif;
             line-height: 1.6;
@@ -22,6 +29,11 @@
             font-weight: bold;
             color: #000;
         }
+        .logo-image {
+            max-width: 120px;
+            height: auto;
+            margin-bottom: 10px;
+        }
         .content {
             background-color: #f9f9f9;
             padding: 30px;
@@ -30,7 +42,7 @@
         }
         .button {
             display: inline-block;
-            background-color: #000;
+            background-color: #f97316;
             color: white;
             padding: 12px 30px;
             text-decoration: none;
@@ -39,13 +51,30 @@
             margin: 20px 0;
         }
         .button:hover {
-            background-color: #333;
+            background-color: #ea580c;
         }
         .footer {
             text-align: center;
             font-size: 12px;
             color: #666;
             margin-top: 30px;
+        }
+        a {
+            color: #000 !important;
+            text-decoration: underline;
+        }
+        a:hover {
+            color: #333 !important;
+        }
+        a:link {
+            color: #000 !important;
+        }
+        a:visited {
+            color: #000 !important;
+        }
+        .verification-link {
+            color: #000 !important;
+            text-decoration: underline;
         }
         .warning {
             background-color: #fff3cd;
@@ -59,37 +88,38 @@
 </head>
 <body>
     <div class="header">
+        <img src="{{ appUrl }}/images/logo-email.png" alt="Benefitowo Logo" class="logo-image">
         <div class="logo">Benefitowo</div>
     </div>
 
     <div class="content">
-        <h1>Welcome to Benefitowo!</h1>
+        <h1>Witamy w Benefitowo!</h1>
         
-        <p>Hello{% if user.firstName %} {{ user.firstName }}{% endif %},</p>
+        <p>Cześć{% if user.firstName %} {{ user.firstName }}{% endif %},</p>
         
-        <p>Thank you for creating an account with Benefitowo. To complete your registration and start using our platform, please verify your email address by clicking the button below:</p>
+        <p>Dziękujemy za utworzenie konta w Benefitowo. Aby dokończyć rejestrację i rozpocząć korzystanie z naszej platformy, potwierdź swój adres email, klikając przycisk poniżej:</p>
         
         <div style="text-align: center;">
-            <a href="{{ verificationUrl }}" class="button">Verify Email Address</a>
+            <a href="{{ verificationUrl }}" class="button">Potwierdź adres email</a>
         </div>
         
-        <p>If the button doesn't work, you can also copy and paste this link into your browser:</p>
+        <p>Jeśli przycisk nie działa, możesz również skopiować i wkleić ten link do przeglądarki:</p>
         <p style="word-break: break-all; background-color: #f0f0f0; padding: 10px; border-radius: 3px;">
-            {{ verificationUrl }}
+            <a href="{{ verificationUrl }}" style="color: #000 !important; text-decoration: underline;">{{ verificationUrl }}</a>
         </p>
         
         <div class="warning">
-            <strong>Important:</strong> This verification link will expire on {{ expiresAt.format('F j, Y \a\t g:i A') }}. If you don't verify your email within this time, you'll need to request a new verification email.
+            <strong>Ważne:</strong> Ten link weryfikacyjny wygaśnie {{ expiresAt.format('j F Y \o g:i') }}. Jeśli nie potwierdzisz swojego emaila w tym czasie, będziesz musiał poprosić o nowy email weryfikacyjny.
         </div>
         
-        <p>If you didn't create an account with Benefitowo, please ignore this email.</p>
+        <p>Jeśli nie utworzyłeś konta w Benefitowo, zignoruj ten email.</p>
         
-        <p>Best regards,<br>The Benefitowo Team</p>
+        <p>Pozdrawiamy,<br>Zespół Benefitowo</p>
     </div>
 
     <div class="footer">
-        <p>This email was sent to {{ user.email }}. If you have any questions, please contact our support team.</p>
-        <p>&copy; {{ "now"|date("Y") }} Benefitowo. All rights reserved.</p>
+        <p>Ten email został wysłany na adres {{ user.email }}. Jeśli masz pytania, skontaktuj się z naszym zespołem wsparcia.</p>
+        <p>&copy; {{ "now"|date("Y") }} Benefitowo. Wszystkie prawa zastrzeżone.</p>
     </div>
 </body>
 </html>

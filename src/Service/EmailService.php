@@ -13,7 +13,8 @@ class EmailService
         private MailerInterface $mailer,
         private Environment $twig,
         private string $adminEmail,
-        private string $adminName = 'Benefitowo Team'
+        private string $adminName = 'Benefitowo Team',
+        private string $appUrl = ''
     ) {
     }
 
