@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 use App\Entity\Order;
+use App\Entity\OrderProduct;
 use App\Entity\App;
 use App\Entity\Cart;
 use App\Entity\CartItem;
@@ -119,6 +120,23 @@ class OrdersController extends AbstractController
             $order->setUser($user);
             $order->setApp($app);
 
+            // Create order products
+            foreach ($cartItems as $cartItem) {
+                $product = $this->entityManager->getRepository(Product::class)->find($cartItem['productId']);
+                $quantity = (int) $cartItem['quantity'];
+                $unitPrice = (float) $product->getProductPrice();
+                $totalPrice = $unitPrice * $quantity;
+
+                $orderProduct = new OrderProduct();
+                $orderProduct->setProduct($product);
+                $orderProduct->setQuantity($quantity);
+                $orderProduct->setUnitPrice($unitPrice);
+                $orderProduct->setTotalPrice($totalPrice);
+                $orderProduct->setOrder($order);
+
+                $order->addOrderProduct($orderProduct);
+            }
+
             // Validate the order
             $errors = $this->validator->validate($order);
             if (count($errors) > 0) {
@@ -163,7 +181,20 @@ class OrdersController extends AbstractController
                             'createdAt' => $object->getCreatedAt()->format('Y-m-d H:i:s'),
                             'modifiedAt' => $object->getModifiedAt()?->format('Y-m-d H:i:s'),
                             'fullName' => $object->getFullName(),
-                            'deliveryTypeDisplay' => $object->getDeliveryTypeDisplay()
+                            'deliveryTypeDisplay' => $object->getDeliveryTypeDisplay(),
+                            'orderProducts' => $object->getOrderProducts()->map(function($orderProduct) {
+                                return [
+                                    'id' => $orderProduct->getId(),
+                                    'product' => [
+                                        'id' => $orderProduct->getProduct()->getId(),
+                                        'name' => $orderProduct->getProduct()->getProductName(),
+                                        'price' => $orderProduct->getProduct()->getProductPrice()
+                                    ],
+                                    'quantity' => $orderProduct->getQuantity(),
+                                    'unitPrice' => $orderProduct->getUnitPrice(),
+                                    'totalPrice' => $orderProduct->getTotalPrice()
+                                ];
+                            })->toArray()
                         ];
                     } elseif ($object instanceof \App\Entity\User) {
                         return [
@@ -230,7 +261,20 @@ class OrdersController extends AbstractController
                             'createdAt' => $object->getCreatedAt()->format('Y-m-d H:i:s'),
                             'modifiedAt' => $object->getModifiedAt()?->format('Y-m-d H:i:s'),
                             'fullName' => $object->getFullName(),
-                            'deliveryTypeDisplay' => $object->getDeliveryTypeDisplay()
+                            'deliveryTypeDisplay' => $object->getDeliveryTypeDisplay(),
+                            'orderProducts' => $object->getOrderProducts()->map(function($orderProduct) {
+                                return [
+                                    'id' => $orderProduct->getId(),
+                                    'product' => [
+                                        'id' => $orderProduct->getProduct()->getId(),
+                                        'name' => $orderProduct->getProduct()->getProductName(),
+                                        'price' => $orderProduct->getProduct()->getProductPrice()
+                                    ],
+                                    'quantity' => $orderProduct->getQuantity(),
+                                    'unitPrice' => $orderProduct->getUnitPrice(),
+                                    'totalPrice' => $orderProduct->getTotalPrice()
+                                ];
+                            })->toArray()
                         ];
                     } elseif ($object instanceof \App\Entity\User) {
                         return [
@@ -300,7 +344,20 @@ class OrdersController extends AbstractController
                             'createdAt' => $object->getCreatedAt()->format('Y-m-d H:i:s'),
                             'modifiedAt' => $object->getModifiedAt()?->format('Y-m-d H:i:s'),
                             'fullName' => $object->getFullName(),
-                            'deliveryTypeDisplay' => $object->getDeliveryTypeDisplay()
+                            'deliveryTypeDisplay' => $object->getDeliveryTypeDisplay(),
+                            'orderProducts' => $object->getOrderProducts()->map(function($orderProduct) {
+                                return [
+                                    'id' => $orderProduct->getId(),
+                                    'product' => [
+                                        'id' => $orderProduct->getProduct()->getId(),
+                                        'name' => $orderProduct->getProduct()->getProductName(),
+                                        'price' => $orderProduct->getProduct()->getProductPrice()
+                                    ],
+                                    'quantity' => $orderProduct->getQuantity(),
+                                    'unitPrice' => $orderProduct->getUnitPrice(),
+                                    'totalPrice' => $orderProduct->getTotalPrice()
+                                ];
+                            })->toArray()
                         ];
                     } elseif ($object instanceof \App\Entity\User) {
                         return [
