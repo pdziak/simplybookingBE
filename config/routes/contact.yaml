@@ -1,0 +1,5 @@
+# Contact controller with /api prefix
+contact_controller:
+    resource: App\Controller\ContactController
+    type: attribute
+    prefix: /api

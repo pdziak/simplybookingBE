@@ -47,3 +47,9 @@ services:
     App\Security\JWTPayloadHandler:
         tags:
             - { name: kernel.event_listener, event: lexik_jwt_authentication.on_jwt_created }
+    
+    # Email Service
+    App\Service\EmailService:
+        arguments:
+            $adminEmail: '%env(MAILER_ADMIN_EMAIL)%'
+            $adminName: '%env(MAILER_ADMIN_NAME)%'
