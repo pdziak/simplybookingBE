@@ -123,9 +123,15 @@ class OrdersController extends AbstractController
             // Create order products
             foreach ($cartItems as $cartItem) {
                 $product = $this->entityManager->getRepository(Product::class)->find($cartItem['productId']);
+                if (!$product) {
+                    return $this->json(['error' => 'Product not found'], Response::HTTP_BAD_REQUEST);
+                }
+                
                 $quantity = (int) $cartItem['quantity'];
                 $unitPrice = (float) $product->getProductPrice();
                 $totalPrice = $unitPrice * $quantity;
+
+                error_log("Creating OrderProduct: Product ID: {$product->getId()}, Name: {$product->getProductName()}, Quantity: {$quantity}, UnitPrice: {$unitPrice}, TotalPrice: {$totalPrice}");
 
                 $orderProduct = new OrderProduct();
                 $orderProduct->setProduct($product);
@@ -135,7 +141,12 @@ class OrdersController extends AbstractController
                 $orderProduct->setOrder($order);
 
                 $order->addOrderProduct($orderProduct);
+                
+                // Explicitly persist the OrderProduct
+                $this->entityManager->persist($orderProduct);
             }
+            
+            error_log("Order created with " . $order->getOrderProducts()->count() . " products");
 
             // Validate the order
             $errors = $this->validator->validate($order);
