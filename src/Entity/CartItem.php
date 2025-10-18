@@ -16,9 +16,9 @@ class CartItem
     private ?int $id = null;
 
     #[ORM\ManyToOne(targetEntity: Cart::class, inversedBy: 'items')]
-    #[ORM\JoinColumn(name: 'cart_id', referencedColumnName: 'id', nullable: false)]
+    #[ORM\JoinColumn(name: 'cart_id', referencedColumnName: 'id', nullable: true)]
     #[Groups(['cart_item:read'])]
-    private Cart $cart;
+    private ?Cart $cart = null;
 
     #[ORM\ManyToOne(targetEntity: Product::class)]
     #[ORM\JoinColumn(name: 'product_id', referencedColumnName: 'id', nullable: false)]
@@ -48,12 +48,12 @@ class CartItem
         return $this->id;
     }
 
-    public function getCart(): Cart
+    public function getCart(): ?Cart
     {
         return $this->cart;
     }
 
-    public function setCart(Cart $cart): static
+    public function setCart(?Cart $cart): static
     {
         $this->cart = $cart;
         return $this;
