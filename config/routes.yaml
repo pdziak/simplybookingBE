@@ -4,7 +4,14 @@ controllers:
         namespace: App\Controller
     type: attribute
     prefix: /api
-    exclude: ['AuthController.php', 'OAuthController.php']
+
+# Auth controller with /api prefix
+auth_controller:
+    resource:
+        path: ../src/AuthController/
+        namespace: App\AuthController
+    type: attribute
+    prefix: /api
 
 # Custom API Platform replacement controllers (without /api prefix)
 custom_controllers:
