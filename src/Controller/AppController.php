@@ -10,13 +10,15 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Serializer\SerializerInterface;
+use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 #[Route('/apps', name: 'custom_app_')]
 class AppController extends AbstractController
 {
     public function __construct(
         private EntityManagerInterface $entityManager,
-        private SerializerInterface $serializer
+        private SerializerInterface $serializer,
+        private ValidatorInterface $validator
     ) {}
 
     #[Route('', name: 'list', methods: ['GET'])]
@@ -118,6 +120,16 @@ class AppController extends AbstractController
             $existingApp->setLogo($data['logo'] ?? '');
             $existingApp->setUpdatedAt(new \DateTimeImmutable());
             
+            // Validate the updated app
+            $errors = $this->validator->validate($existingApp);
+            if (count($errors) > 0) {
+                $errorMessages = [];
+                foreach ($errors as $error) {
+                    $errorMessages[] = $error->getMessage();
+                }
+                return $this->json(['error' => 'Validation failed', 'details' => $errorMessages], Response::HTTP_BAD_REQUEST);
+            }
+            
             $this->entityManager->flush();
             $app = $existingApp;
         } else {
@@ -138,6 +150,16 @@ class AppController extends AbstractController
             $app->setDescription($data['description'] ?? '');
             $app->setLogo($data['logo'] ?? '');
             $app->setOwner($user); // Set the owner (user) for the app
+            
+            // Validate the new app
+            $errors = $this->validator->validate($app);
+            if (count($errors) > 0) {
+                $errorMessages = [];
+                foreach ($errors as $error) {
+                    $errorMessages[] = $error->getMessage();
+                }
+                return $this->json(['error' => 'Validation failed', 'details' => $errorMessages], Response::HTTP_BAD_REQUEST);
+            }
             
             $this->entityManager->persist($app);
             $this->entityManager->flush();
@@ -211,6 +233,16 @@ class AppController extends AbstractController
         }
         if (isset($data['logo'])) {
             $app->setLogo($data['logo']);
+        }
+        
+        // Validate the updated app
+        $errors = $this->validator->validate($app);
+        if (count($errors) > 0) {
+            $errorMessages = [];
+            foreach ($errors as $error) {
+                $errorMessages[] = $error->getMessage();
+            }
+            return $this->json(['error' => 'Validation failed', 'details' => $errorMessages], Response::HTTP_BAD_REQUEST);
         }
         
         $this->entityManager->flush();

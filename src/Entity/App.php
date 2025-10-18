@@ -29,6 +29,10 @@ class App
         pattern: '/^[a-z0-9-]+$/',
         message: 'Slug must contain only lowercase letters, numbers, and hyphens'
     )]
+    #[Assert\NotEqualTo(
+        value: 'api',
+        message: 'Slug "api" is reserved and cannot be used'
+    )]
     #[Groups(['app:read', 'app:write', 'app:subdomain'])]
     private string $slug;
 
