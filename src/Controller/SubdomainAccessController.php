@@ -75,6 +75,7 @@ class SubdomainAccessController extends AbstractController
                         'title' => $object->getTitle(),
                         'slug' => $object->getSlug(),
                         'companyName' => $object->getCompanyName(),
+                        'description' => $object->getDescription(),
                         'logo' => $object->getLogo()
                     ];
                 } elseif ($object instanceof \App\Entity\User) {

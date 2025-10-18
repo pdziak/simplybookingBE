@@ -15,12 +15,12 @@ class App
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column(type: 'integer')]
-    #[Groups(['app:read'])]
+    #[Groups(['app:read', 'app:subdomain'])]
     private ?int $id = null;
 
     #[ORM\Column(type: 'string', length: 255)]
     #[Assert\NotBlank(message: 'Title is required')]
-    #[Groups(['app:read', 'app:write'])]
+    #[Groups(['app:read', 'app:write', 'app:subdomain'])]
     private string $title;
 
     #[ORM\Column(type: 'string', length: 255, unique: true)]
@@ -29,22 +29,22 @@ class App
         pattern: '/^[a-z0-9-]+$/',
         message: 'Slug must contain only lowercase letters, numbers, and hyphens'
     )]
-    #[Groups(['app:read', 'app:write'])]
+    #[Groups(['app:read', 'app:write', 'app:subdomain'])]
     private string $slug;
 
     #[ORM\Column(type: 'string', length: 255)]
     #[Assert\NotBlank(message: 'Company name is required')]
-    #[Groups(['app:read', 'app:write'])]
+    #[Groups(['app:read', 'app:write', 'app:subdomain'])]
     private string $companyName;
 
     #[ORM\Column(type: 'string', length: 180)]
     #[Assert\NotBlank(message: 'Email is required')]
     #[Assert\Email(message: 'Email must be valid')]
-    #[Groups(['app:read', 'app:write'])]
+    #[Groups(['app:read', 'app:write', 'app:subdomain'])]
     private string $email;
 
     #[ORM\Column(type: 'text', nullable: true)]
-    #[Groups(['app:read', 'app:write'])]
+    #[Groups(['app:read', 'app:write', 'app:subdomain'])]
     private ?string $description = null;
 
     #[ORM\Column(type: 'string', length: 500)]
@@ -53,7 +53,7 @@ class App
         pattern: '/^logos\/[a-zA-Z0-9\-_\.]+$/',
         message: 'Logo must be a valid logo path'
     )]
-    #[Groups(['app:read', 'app:write'])]
+    #[Groups(['app:read', 'app:write', 'app:subdomain'])]
     private string $logo;
 
     #[ORM\Column(type: 'datetime_immutable')]
