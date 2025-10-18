@@ -8,6 +8,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Process\Process;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Serializer\SerializerInterface;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
@@ -163,6 +164,9 @@ class AppController extends AbstractController
             
             $this->entityManager->persist($app);
             $this->entityManager->flush();
+            
+            // Execute SendNotificationCommand for new app creation only
+            $this->executeSendNotificationCommand($app->getSlug());
         }
         
         // Serialize with context to avoid circular references
@@ -280,6 +284,44 @@ class AppController extends AbstractController
         $response = new JsonResponse(['message' => 'App deleted successfully'], Response::HTTP_OK);
         
         return $response;
+    }
+
+    /**
+     * Execute the SendNotificationCommand for a given subdomain
+     */
+    private function executeSendNotificationCommand(string $subdomain): void
+    {
+        try {
+            // Create a process to execute the command
+            $process = new Process([
+                'php',
+                'bin/console',
+                'app:send-notification',
+                $subdomain
+            ]);
+            
+            // Set working directory to the project root
+            $process->setWorkingDirectory(__DIR__ . '/../../');
+            
+            // Execute the command
+            $process->run();
+            
+            // Log the result
+            if ($process->isSuccessful()) {
+                error_log(sprintf('SendNotificationCommand executed successfully for subdomain: %s', $subdomain));
+            } else {
+                error_log(sprintf('SendNotificationCommand failed for subdomain: %s. Error: %s', 
+                    $subdomain, 
+                    $process->getErrorOutput()
+                ));
+            }
+        } catch (\Exception $e) {
+            // Log the exception but don't fail the app creation
+            error_log(sprintf('Exception while executing SendNotificationCommand for subdomain: %s. Error: %s', 
+                $subdomain, 
+                $e->getMessage()
+            ));
+        }
     }
 
 }
