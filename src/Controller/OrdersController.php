@@ -266,58 +266,89 @@ class OrdersController extends AbstractController
         }
 
         try {
+            // Get orders with all related data
             $orders = $this->entityManager->getRepository(Order::class)
-                ->findBy(['user' => $userId], ['createdAt' => 'DESC']);
+                ->createQueryBuilder('o')
+                ->leftJoin('o.orderProducts', 'op')
+                ->leftJoin('op.product', 'p')
+                ->leftJoin('o.user', 'u')
+                ->leftJoin('o.app', 'a')
+                ->addSelect('op', 'p', 'u', 'a')
+                ->where('o.user = :userId')
+                ->setParameter('userId', $userId)
+                ->orderBy('o.createdAt', 'DESC')
+                ->getQuery()
+                ->getResult();
 
-            $jsonData = $this->serializer->serialize($orders, 'json', [
-                'groups' => ['order:read'],
-                'circular_reference_handler' => function ($object, $format, $context) {
-                    if ($object instanceof \App\Entity\Order) {
-                        return [
-                            'id' => $object->getId(),
-                            'firstname' => $object->getFirstname(),
-                            'lastname' => $object->getLastname(),
-                            'email' => $object->getEmail(),
-                            'shippingLocation' => $object->getShippingLocation(),
-                            'shippingAddress' => $object->getShippingAddress(),
-                            'createdAt' => $object->getCreatedAt()->format('Y-m-d H:i:s'),
-                            'modifiedAt' => $object->getModifiedAt()?->format('Y-m-d H:i:s'),
-                            'fullName' => $object->getFullName(),
-                            'deliveryTypeDisplay' => $object->getDeliveryTypeDisplay(),
-                            'orderProducts' => $object->getOrderProducts()->map(function($orderProduct) {
-                                return [
-                                    'id' => $orderProduct->getId(),
-                                    'product' => [
-                                        'id' => $orderProduct->getProduct()->getId(),
-                                        'name' => $orderProduct->getProduct()->getProductName(),
-                                        'price' => $orderProduct->getProduct()->getProductPrice()
-                                    ],
-                                    'quantity' => $orderProduct->getQuantity(),
-                                    'unitPrice' => (float) $orderProduct->getUnitPrice(),
-                                    'totalPrice' => (float) $orderProduct->getTotalPrice()
-                                ];
-                            })->toArray()
-                        ];
-                    } elseif ($object instanceof \App\Entity\User) {
-                        return [
-                            'id' => $object->getId(),
-                            'email' => $object->getEmail(),
-                            'firstName' => $object->getFirstName(),
-                            'lastName' => $object->getLastName()
-                        ];
-                    } elseif ($object instanceof \App\Entity\App) {
-                        return [
-                            'id' => $object->getId(),
-                            'title' => $object->getTitle(),
-                            'slug' => $object->getSlug()
-                        ];
-                    }
-                    
-                    return method_exists($object, 'getId') ? $object->getId() : null;
+            // Debug: Log the orders data
+            error_log('Orders found: ' . count($orders));
+            foreach ($orders as $order) {
+                error_log('Order ID: ' . $order->getId() . ', OrderProducts count: ' . $order->getOrderProducts()->count());
+                foreach ($order->getOrderProducts() as $orderProduct) {
+                    error_log('OrderProduct ID: ' . $orderProduct->getId() . ', Product: ' . ($orderProduct->getProduct() ? $orderProduct->getProduct()->getProductName() : 'NULL'));
                 }
-            ]);
+            }
 
-            return new JsonResponse($jsonData, Response::HTTP_OK, [], true);
+            // Manually build the response to ensure proper data loading
+            $responseData = [];
+            foreach ($orders as $order) {
+                $orderData = [
+                    'id' => $order->getId(),
+                    'firstname' => $order->getFirstname(),
+                    'lastname' => $order->getLastname(),
+                    'email' => $order->getEmail(),
+                    'shippingLocation' => $order->getShippingLocation(),
+                    'shippingAddress' => $order->getShippingAddress(),
+                    'createdAt' => $order->getCreatedAt()->format('Y-m-d H:i:s'),
+                    'modifiedAt' => $order->getModifiedAt()?->format('Y-m-d H:i:s'),
+                    'fullName' => $order->getFullName(),
+                    'deliveryTypeDisplay' => $order->getDeliveryTypeDisplay(),
+                    'orderProducts' => [],
+                    'user' => [],
+                    'app' => []
+                ];
+
+                // Build order products
+                foreach ($order->getOrderProducts() as $orderProduct) {
+                    $product = $orderProduct->getProduct();
+                    $orderData['orderProducts'][] = [
+                        'id' => $orderProduct->getId(),
+                        'product' => [
+                            'id' => $product ? $product->getId() : null,
+                            'name' => $product ? $product->getProductName() : null,
+                            'price' => $product ? $product->getProductPrice() : null
+                        ],
+                        'quantity' => $orderProduct->getQuantity(),
+                        'unitPrice' => (float) $orderProduct->getUnitPrice(),
+                        'totalPrice' => (float) $orderProduct->getTotalPrice()
+                    ];
+                }
+
+                // Build user data
+                $user = $order->getUser();
+                if ($user) {
+                    $orderData['user'] = [
+                        'id' => $user->getId(),
+                        'email' => $user->getEmail(),
+                        'firstName' => $user->getFirstName(),
+                        'lastName' => $user->getLastName()
+                    ];
+                }
+
+                // Build app data
+                $app = $order->getApp();
+                if ($app) {
+                    $orderData['app'] = [
+                        'id' => $app->getId(),
+                        'title' => $app->getTitle(),
+                        'slug' => $app->getSlug()
+                    ];
+                }
+
+                $responseData[] = $orderData;
+            }
+
+            return $this->json($responseData);
 
         } catch (\Exception $e) {
             return $this->json([
