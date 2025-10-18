@@ -666,4 +666,121 @@ class UserController extends AbstractController
             ]
         ], Response::HTTP_OK);
     }
+
+    #[Route('/apps/{appId}/users/create', name: 'create_user_for_app', methods: ['POST'])]
+    public function createUserForApp(int $appId, Request $request): JsonResponse
+    {
+        // Check if user has admin role or is the app owner
+        $currentUser = $this->getUser();
+        if (!$currentUser) {
+            return new JsonResponse(['error' => 'Authentication required'], Response::HTTP_UNAUTHORIZED);
+        }
+
+        // Find the app
+        $app = $this->entityManager->getRepository(\App\Entity\App::class)->find($appId);
+        if (!$app) {
+            return new JsonResponse(['error' => 'App not found'], Response::HTTP_NOT_FOUND);
+        }
+
+        // Check if user is admin or app owner
+        $isAdmin = in_array('ROLE_ADMIN', $currentUser->getRoles());
+        $isAppOwner = $app->getOwner() === $currentUser;
+        
+        if (!$isAdmin && !$isAppOwner) {
+            return new JsonResponse(['error' => 'Access denied. Admin role or app ownership required.'], Response::HTTP_FORBIDDEN);
+        }
+
+        $data = json_decode($request->getContent(), true);
+        
+        $userRequest = $this->serializer->deserialize(
+            json_encode($data),
+            UserRequest::class,
+            'json'
+        );
+
+        $errors = $this->validator->validate($userRequest);
+        if (count($errors) > 0) {
+            return new JsonResponse([
+                'error' => 'Validation failed',
+                'details' => (string) $errors
+            ], Response::HTTP_BAD_REQUEST);
+        }
+
+        // Check if user already exists by email
+        $existingUser = $this->entityManager->getRepository(User::class)
+            ->findOneBy(['email' => $userRequest->email]);
+
+        if ($existingUser) {
+            // If user exists, just assign them to the app
+            if (!$app->getAssignedUsers()->contains($existingUser)) {
+                $app->addAssignedUser($existingUser);
+                $this->entityManager->flush();
+            }
+            
+            return new JsonResponse([
+                'message' => 'User already exists and has been assigned to the app',
+                'user' => [
+                    'id' => $existingUser->getId(),
+                    'email' => $existingUser->getEmail(),
+                    'firstName' => $existingUser->getFirstName(),
+                    'lastName' => $existingUser->getLastName(),
+                    'login' => $existingUser->getLogin(),
+                    'roles' => $existingUser->getRoles()
+                ]
+            ], Response::HTTP_OK);
+        }
+
+        // Check if login is provided and if it already exists
+        if ($userRequest->login) {
+            $existingUserByLogin = $this->entityManager->getRepository(User::class)
+                ->findOneBy(['login' => $userRequest->login]);
+
+            if ($existingUserByLogin) {
+                return new JsonResponse([
+                    'error' => 'Login is already taken'
+                ], Response::HTTP_CONFLICT);
+            }
+        }
+
+        // Create new user
+        $user = new User();
+        $user->setEmail($userRequest->email);
+        $user->setLogin($userRequest->login);
+        $user->setFirstName($userRequest->firstName);
+        $user->setLastName($userRequest->lastName);
+        
+        // For app owners, only allow creating users with ROLE_USER
+        // Admins can create users with any role
+        if ($isAdmin) {
+            $user->setRoles($userRequest->roles);
+        } else {
+            $user->setRoles(['ROLE_USER']);
+        }
+
+        // Hash password if provided
+        if ($userRequest->password) {
+            $hashedPassword = $this->passwordHasher->hashPassword($user, $userRequest->password);
+            $user->setPassword($hashedPassword);
+        }
+
+        // Save the user
+        $this->entityManager->persist($user);
+        $this->entityManager->flush();
+
+        // Assign the user to the app
+        $app->addAssignedUser($user);
+        $this->entityManager->flush();
+
+        return new JsonResponse([
+            'message' => 'User created and assigned to app successfully',
+            'user' => [
+                'id' => $user->getId(),
+                'email' => $user->getEmail(),
+                'firstName' => $user->getFirstName(),
+                'lastName' => $user->getLastName(),
+                'login' => $user->getLogin(),
+                'roles' => $user->getRoles()
+            ]
+        ], Response::HTTP_CREATED);
+    }
 }
