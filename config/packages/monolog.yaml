@@ -61,10 +61,9 @@ when@prod:
                 level: debug
                 formatter: monolog.formatter.json
 
-            # dynamic per-subdomain file
             subdomain:
-                type: service
-                id: App\Monolog\SubdomainStreamHandler
+                type: stream
+                path: "/var/logs/subdomain.log"
                 level: info
                 channels: ["subdomain"]
                 formatter: monolog.formatter.json
