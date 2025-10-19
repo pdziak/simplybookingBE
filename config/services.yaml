@@ -58,3 +58,8 @@ services:
         arguments:
             $adminEmail: '%env(MAILER_ADMIN_EMAIL)%'
             $adminName: '%env(MAILER_ADMIN_NAME)%'
+    
+    # App Controller with subdomain logger
+    App\Controller\AppController:
+        arguments:
+            $logger: '@monolog.logger.subdomain'
