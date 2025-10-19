@@ -50,14 +50,14 @@ when@prod:
             nested:
                 type: stream
                 # stays within open_basedir
-                path: "%kernel.project_dir%/var/logs/prod.log"
+                path: "%kernel.logs_dir%/prod.log"
                 level: debug
                 formatter: monolog.formatter.json
 
             subdomain:
                 type: stream
                 # stays within open_basedir
-                path: "%kernel.project_dir%/var/logs/subdomain.log"
+                path: "%kernel.logs_dir%/subdomain.log"
                 level: info
                 channels: ["subdomain"]
                 formatter: monolog.formatter.json
