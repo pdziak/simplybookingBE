@@ -25,12 +25,25 @@ class OAuthController extends AbstractController
     ) {
     }
 
-    public function googleOAuth(): JsonResponse
+    public function googleOAuth(Request $request): JsonResponse
     {
         $client = $this->clientRegistry->getClient('google');
-        $authUrl = $client->getOAuth2Provider()->getAuthorizationUrl([
+        
+        // Get the redirect URL from query params (if coming from subdomain)
+        $redirectUrl = $request->query->get('redirect_url');
+        
+        $options = [
             'scope' => ['email', 'profile']
-        ]);
+        ];
+        
+        // Pass redirect URL through state parameter if provided
+        if ($redirectUrl) {
+            $options['state'] = base64_encode(json_encode([
+                'redirect_url' => $redirectUrl
+            ]));
+        }
+        
+        $authUrl = $client->getOAuth2Provider()->getAuthorizationUrl($options);
 
         return new JsonResponse([
             'auth_url' => $authUrl
@@ -46,6 +59,14 @@ class OAuthController extends AbstractController
             $code = $request->query->get('code');
             if (!$code) {
                 throw new \Exception('Authorization code not found');
+            }
+            
+            // Get the state parameter to extract redirect URL
+            $state = $request->query->get('state');
+            $redirectUrl = null;
+            if ($state) {
+                $stateData = json_decode(base64_decode($state), true);
+                $redirectUrl = $stateData['redirect_url'] ?? null;
             }
             
             // Exchange code for access token
@@ -151,35 +172,35 @@ class OAuthController extends AbstractController
                 'emailVerifiedAt' => $user->getEmailVerifiedAt()?->format('Y-m-d H:i:s')
             ];
             
-            // Get the frontend URL from environment or use default
-            $frontendUrl = $_ENV['APP_URL'] ?? 'https://benefitowo.pl';
+            // Get the frontend URL from state or use default
+            $frontendUrl = $redirectUrl ?? ($_ENV['APP_URL'] ?? 'https://benefitowo.pl');
             
             // Create the redirect URL with token and user data as URL parameters
-            $redirectUrl = $frontendUrl . '/auth/google/callback?' . http_build_query([
+            $finalRedirectUrl = $frontendUrl . '/auth/google/callback?' . http_build_query([
                 'token' => $token,
                 'user' => json_encode($userData),
                 'success' => 'true'
             ]);
             
             // Redirect to frontend with token
-            return $this->redirect($redirectUrl);
+            return $this->redirect($finalRedirectUrl);
             
         } catch (\Exception $e) {
             // Log the error for debugging
             error_log('OAuth authentication error: ' . $e->getMessage());
             error_log('Stack trace: ' . $e->getTraceAsString());
             
-            // Get the frontend URL from environment or use default
-            $frontendUrl = $_ENV['APP_URL'] ?? 'https://benefitowo.pl';
+            // Get the frontend URL from state or use default
+            $frontendUrl = $redirectUrl ?? ($_ENV['APP_URL'] ?? 'https://benefitowo.pl');
             
             // Redirect to frontend with error message
-            $redirectUrl = $frontendUrl . '/auth/google/callback?' . http_build_query([
+            $errorRedirectUrl = $frontendUrl . '/auth/google/callback?' . http_build_query([
                 'error' => 'OAuth authentication failed',
                 'message' => $e->getMessage(),
                 'success' => 'false'
             ]);
             
-            return $this->redirect($redirectUrl);
+            return $this->redirect($errorRedirectUrl);
         }
     }
 }
