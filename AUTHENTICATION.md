@@ -77,11 +77,17 @@ Authorization: Bearer <your-jwt-token>
     "email": "user@example.com",
     "firstName": "John",
     "lastName": "Doe",
+    "login": "john_doe",
+    "googleId": null,
     "roles": ["ROLE_USER"],
+    "emailVerified": true,
+    "emailVerifiedAt": "2024-10-13 14:00:00",
     "createdAt": "2024-10-13 14:00:00",
     "updatedAt": null
 }
 ```
+
+**Note:** `googleId` will be `null` for users who registered with email/password, and will contain the Google OAuth ID for users who signed up with Google.
 
 ### 4. Refresh Token
 **POST** `/auth/refresh`

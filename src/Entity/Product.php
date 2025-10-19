@@ -15,7 +15,7 @@ class Product
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column(type: 'integer')]
-    #[Groups(['product:read'])]
+    #[Groups(['product:read', 'order:read'])]
     private ?int $id = null;
 
     #[ORM\ManyToOne(targetEntity: Category::class)]
@@ -25,7 +25,7 @@ class Product
 
     #[ORM\Column(type: 'string', length: 255)]
     #[Assert\NotBlank(message: 'Product name is required')]
-    #[Groups(['product:read', 'product:write'])]
+    #[Groups(['product:read', 'product:write', 'order:read'])]
     private string $productName;
 
     #[ORM\Column(type: 'text', nullable: true)]
@@ -40,7 +40,7 @@ class Product
     #[Assert\NotBlank(message: 'Product price is required')]
     #[Assert\Type(type: 'numeric', message: 'Product price must be a number')]
     #[Assert\GreaterThanOrEqual(value: 0, message: 'Product price must be greater than or equal to 0')]
-    #[Groups(['product:read', 'product:write'])]
+    #[Groups(['product:read', 'product:write', 'order:read'])]
     private float $productPrice;
 
     #[ORM\Column(type: 'integer')]

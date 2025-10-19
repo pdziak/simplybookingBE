@@ -145,6 +145,7 @@ class OAuthController extends AbstractController
                 'login' => $user->getLogin(),
                 'firstName' => $user->getFirstName(),
                 'lastName' => $user->getLastName(),
+                'googleId' => $user->getGoogleId(), // Include Google OAuth ID
                 'roles' => $user->getRoles(),
                 'emailVerified' => $user->isEmailVerified(),
                 'emailVerifiedAt' => $user->getEmailVerifiedAt()?->format('Y-m-d H:i:s')

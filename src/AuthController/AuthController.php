@@ -120,6 +120,7 @@ class AuthController extends AbstractController
                 'login' => $user->getLogin(),
                 'firstName' => $user->getFirstName(),
                 'lastName' => $user->getLastName(),
+                'googleId' => $user->getGoogleId(), // Include Google OAuth ID (null for email registration)
                 'emailVerified' => $user->isEmailVerified(),
                 'createdAt' => $user->getCreatedAt()->format('Y-m-d H:i:s')
             ]
@@ -207,6 +208,7 @@ class AuthController extends AbstractController
             'lastName' => $user->getLastName(),
             'first_name' => $user->getFirstName(), // Snake case for compatibility
             'last_name' => $user->getLastName(),   // Snake case for compatibility
+            'googleId' => $user->getGoogleId(), // Include Google OAuth ID
             'roles' => $user->getRoles(),
             'emailVerified' => $user->isEmailVerified(),
             'emailVerifiedAt' => $user->getEmailVerifiedAt()?->format('Y-m-d H:i:s')
@@ -244,6 +246,7 @@ class AuthController extends AbstractController
             'first_name' => $user->getFirstName(), // Snake case for compatibility
             'last_name' => $user->getLastName(),   // Snake case for compatibility
             'login' => $user->getLogin(),
+            'googleId' => $user->getGoogleId(), // Include Google OAuth ID
             'roles' => $user->getRoles(),
             'emailVerified' => $user->isEmailVerified(),
             'emailVerifiedAt' => $user->getEmailVerifiedAt()?->format('Y-m-d H:i:s'),

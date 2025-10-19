@@ -12,7 +12,7 @@ class OrderProduct
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column(type: 'integer')]
-    #[Groups(['order_product:read'])]
+    #[Groups(['order_product:read', 'order:read'])]
     private ?int $id = null;
 
     #[ORM\ManyToOne(targetEntity: Order::class, inversedBy: 'orderProducts')]
@@ -22,23 +22,23 @@ class OrderProduct
 
     #[ORM\ManyToOne(targetEntity: Product::class)]
     #[ORM\JoinColumn(name: 'product_id', referencedColumnName: 'id', nullable: false)]
-    #[Groups(['order_product:read'])]
+    #[Groups(['order_product:read', 'order:read'])]
     private Product $product;
 
     #[ORM\Column(type: 'integer')]
-    #[Groups(['order_product:read', 'order_product:write'])]
+    #[Groups(['order_product:read', 'order_product:write', 'order:read'])]
     private int $quantity;
 
     #[ORM\Column(type: 'decimal', precision: 10, scale: 2)]
-    #[Groups(['order_product:read', 'order_product:write'])]
+    #[Groups(['order_product:read', 'order_product:write', 'order:read'])]
     private float $unitPrice;
 
     #[ORM\Column(type: 'decimal', precision: 10, scale: 2)]
-    #[Groups(['order_product:read', 'order_product:write'])]
+    #[Groups(['order_product:read', 'order_product:write', 'order:read'])]
     private float $totalPrice;
 
     #[ORM\Column(type: 'datetime_immutable')]
-    #[Groups(['order_product:read'])]
+    #[Groups(['order_product:read', 'order:read'])]
     private \DateTimeImmutable $createdAt;
 
     public function __construct()
