@@ -21,7 +21,7 @@ class CreateSubdomainMessageHandler
         ]);
 
         $name = $message->getSubdomain();
-        $output = shell_exec("/home/benefitowopl/create_subdomain.sh " . escapeshellarg($name) . " 2>&1");
+        $output = shell_exec("/home/simplybookingpl/create_subdomain.sh " . escapeshellarg($name) . " 2>&1");
         echo "<pre>$output</pre>";
 
         echo sprintf(

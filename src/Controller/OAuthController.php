@@ -173,7 +173,7 @@ class OAuthController extends AbstractController
             ];
             
             // Get the frontend URL from state or use default
-            $frontendUrl = $redirectUrl ?? ($_ENV['APP_URL'] ?? 'https://benefitowo.pl');
+            $frontendUrl = $redirectUrl ?? ($_ENV['APP_URL'] ?? 'https://simplybooking.pl');
             
             // Create the redirect URL with token and user data as URL parameters
             $finalRedirectUrl = $frontendUrl . '/auth/google/callback?' . http_build_query([
@@ -191,7 +191,7 @@ class OAuthController extends AbstractController
             error_log('Stack trace: ' . $e->getTraceAsString());
             
             // Get the frontend URL from state or use default
-            $frontendUrl = $redirectUrl ?? ($_ENV['APP_URL'] ?? 'https://benefitowo.pl');
+            $frontendUrl = $redirectUrl ?? ($_ENV['APP_URL'] ?? 'https://simplybooking.pl');
             
             // Redirect to frontend with error message
             $errorRedirectUrl = $frontendUrl . '/auth/google/callback?' . http_build_query([

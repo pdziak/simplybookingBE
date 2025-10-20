@@ -5,7 +5,7 @@ Your Composer dependencies require PHP >= 8.4. This package bumps the image to *
 ## Steps
 ```bash
 # make sure hosts entry exists:
-# 127.0.0.1 benefitowo.webdev
+# 127.0.0.1 simplybooking.webdev
 
 docker compose build --no-cache php
 docker compose up -d

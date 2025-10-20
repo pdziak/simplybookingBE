@@ -129,7 +129,7 @@ const greeting = greetUser(user);</code></pre>
     <strong>Benefitowo sp. z o.o.</strong><br>
     ul. Example Street 123<br>
     00-000 Warsaw, Poland<br>
-    Email: <a href="mailto:kontakt@benefitowo.pl">kontakt@benefitowo.pl</a><br>
+    Email: <a href="mailto:kontakt@simplybooking.pl">kontakt@simplybooking.pl</a><br>
     Phone: +48 123 456 789
 </address>
 

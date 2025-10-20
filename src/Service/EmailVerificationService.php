@@ -41,7 +41,7 @@ class EmailVerificationService
 
         // Create email
         $email = (new Email())
-            ->from('noreply@benefitowo.com')
+            ->from('noreply@simplybooking.com')
             ->to($user->getEmail())
             ->subject('Potwierdź swój adres email - Benefitowo')
             ->html($this->twig->render('emails/verification.html.twig', [

@@ -39,7 +39,7 @@ class OrderNotificationService
 
         // Create email
         $email = (new Email())
-            ->from('noreply@benefitowo.com')
+            ->from('noreply@simplybooking.com')
             ->to($appEmail)
             ->subject('Nowe zamówienie w sklepie ' . $app->getTitle())
             ->html($this->twig->render('emails/new_order_notification.html.twig', [

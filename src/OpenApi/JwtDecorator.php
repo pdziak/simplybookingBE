@@ -20,7 +20,7 @@ class JwtDecorator implements OpenApiFactoryInterface
         // Add servers with /api prefix
         $openApi = $openApi->withServers([
             new Server('http://localhost/api', 'Development server'),
-            new Server('https://api.benefitowo.com/api', 'Production server')
+            new Server('https://api.simplybooking.com/api', 'Production server')
         ]);
 
         return $openApi;

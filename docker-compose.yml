@@ -5,13 +5,13 @@ services:
     image: postgres:16-alpine
     container_name: apip-postgres
     environment:
-      POSTGRES_DB: app
-      POSTGRES_USER: app
-      POSTGRES_PASSWORD: app
+      POSTGRES_DB: sbapp
+      POSTGRES_USER: sbapp
+      POSTGRES_PASSWORD: sbapp
     volumes:
-      - pgdata:/var/lib/postgresql/data
+      - sbapp:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U app -d app"]
+      test: ["CMD-SHELL", "pg_isready -U sbapp -d sbapp"]
       interval: 5s
       timeout: 5s
       retries: 10
@@ -43,9 +43,9 @@ services:
     container_name: apip-php
     environment:
       APP_ENV: dev
-      DATABASE_URL: "postgresql://app:app@db:5432/app?serverVersion=16&charset=utf8"
+      DATABASE_URL: "postgresql://sbapp:sbapp@db:5432/sbapp?serverVersion=16&charset=utf8"
       REDIS_URL: "redis://redis:6379"
-      APP_URL: "http://benefitowo.webdev:3000"
+      APP_URL: "http://simplybooking.webdev:3000"
     volumes:
       - ./:/var/www/html:cached
     expose:
@@ -64,7 +64,7 @@ services:
     depends_on:
       - php
     ports:
-      - "8080:80"                    # visit http://benefitowo.webdev:8080
+      - "8080:80"                    # visit http://simplybooking.webdev:8080
     volumes:
       - ./:/var/www/html:ro
       - ./apache/httpd.conf:/usr/local/apache2/conf/httpd.conf:ro
@@ -72,7 +72,7 @@ services:
       - backend
 
 volumes:
-  pgdata:
+  sbapp:
   redisdata:
 
 networks:

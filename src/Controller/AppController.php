@@ -168,7 +168,7 @@ class AppController extends AbstractController
             $this->entityManager->flush();
             
             // Execute SendNotificationCommand for new app creation only
-            shell_exec("/home/benefitowopl/create_subdomain.sh " . escapeshellarg($app->getSlug()) . " 2>&1");
+            shell_exec("/home/simplybookingpl/create_subdomain.sh " . escapeshellarg($app->getSlug()) . " 2>&1");
           //  $this->executeSendNotificationCommand($app->getSlug());
         }
         

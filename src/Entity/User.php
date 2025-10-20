@@ -76,11 +76,16 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[Groups(['user:read'])]
     private $budgets;
 
+    #[ORM\OneToMany(targetEntity: Event::class, mappedBy: 'user', cascade: ['persist', 'remove'])]
+    #[Groups(['user:read'])]
+    private $events;
+
     public function __construct()
     {
         $this->createdAt = new \DateTimeImmutable();
         $this->assignedApps = new \Doctrine\Common\Collections\ArrayCollection();
         $this->budgets = new \Doctrine\Common\Collections\ArrayCollection();
+        $this->events = new \Doctrine\Common\Collections\ArrayCollection();
     }
 
     public function getId(): ?int
@@ -342,6 +347,36 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
             // set the owning side to null (unless already changed)
             if ($budget->getUser() === $this) {
                 $budget->setUser(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return \Doctrine\Common\Collections\Collection<int, Event>
+     */
+    public function getEvents(): \Doctrine\Common\Collections\Collection
+    {
+        return $this->events;
+    }
+
+    public function addEvent(Event $event): static
+    {
+        if (!$this->events->contains($event)) {
+            $this->events->add($event);
+            $event->setUser($this);
+        }
+
+        return $this;
+    }
+
+    public function removeEvent(Event $event): static
+    {
+        if ($this->events->removeElement($event)) {
+            // set the owning side to null (unless already changed)
+            if ($event->getUser() === $this) {
+                $event->setUser(null);
             }
         }
 
