@@ -50,9 +50,14 @@ class Event
     #[Groups(['event:read'])]
     private ?\DateTimeImmutable $updatedAt = null;
 
+    #[ORM\OneToMany(targetEntity: EventPerson::class, mappedBy: 'event', cascade: ['persist', 'remove'])]
+    #[Groups(['event:read'])]
+    private $persons;
+
     public function __construct()
     {
         $this->createdAt = new \DateTimeImmutable();
+        $this->persons = new \Doctrine\Common\Collections\ArrayCollection();
     }
 
     public function getId(): ?int
@@ -145,6 +150,36 @@ class Event
     public function setUpdatedAt(?\DateTimeImmutable $updatedAt): static
     {
         $this->updatedAt = $updatedAt;
+
+        return $this;
+    }
+
+    /**
+     * @return \Doctrine\Common\Collections\Collection<int, EventPerson>
+     */
+    public function getPersons(): \Doctrine\Common\Collections\Collection
+    {
+        return $this->persons;
+    }
+
+    public function addPerson(EventPerson $person): static
+    {
+        if (!$this->persons->contains($person)) {
+            $this->persons->add($person);
+            $person->setEvent($this);
+        }
+
+        return $this;
+    }
+
+    public function removePerson(EventPerson $person): static
+    {
+        if ($this->persons->removeElement($person)) {
+            // set the owning side to null (unless already changed)
+            if ($person->getEvent() === $this) {
+                $person->setEvent(null);
+            }
+        }
 
         return $this;
     }
