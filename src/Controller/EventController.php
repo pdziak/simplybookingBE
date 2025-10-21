@@ -27,10 +27,24 @@ class EventController extends AbstractController
     #[Route('', name: 'list', methods: ['GET'])]
     public function list(): JsonResponse
     {
-        $events = $this->eventRepository->createQueryBuilder('e')
+        $queryBuilder = $this->eventRepository->createQueryBuilder('e')
             ->leftJoin('e.user', 'u')
             ->leftJoin('e.persons', 'p')
-            ->addSelect('u', 'p')
+            ->addSelect('u', 'p');
+        
+        // Check if user is authenticated
+        $user = $this->getUser();
+        if (!$user) {
+            // For non-authenticated users, show only demo user events (user_id = 1)
+            $queryBuilder->andWhere('u.id = :demoUserId')
+                ->setParameter('demoUserId', 1);
+        } else {
+            // For authenticated users, show only their own events
+            $queryBuilder->andWhere('u.id = :userId')
+                ->setParameter('userId', $user->getId());
+        }
+        
+        $events = $queryBuilder
             ->orderBy('e.datetime', 'ASC')
             ->getQuery()
             ->getResult();
@@ -90,7 +104,7 @@ class EventController extends AbstractController
             $searchTerm = trim($query);
             
             // Find events that match the search criteria (case insensitive)
-            $events = $this->eventRepository->createQueryBuilder('e')
+            $queryBuilder = $this->eventRepository->createQueryBuilder('e')
                 ->leftJoin('e.user', 'u')
                 ->leftJoin('e.persons', 'p')
                 ->addSelect('u', 'p')
@@ -98,7 +112,21 @@ class EventController extends AbstractController
                 ->orWhere('LOWER(e.description) LIKE LOWER(:query)')
                 ->orWhere('LOWER(e.location) LIKE LOWER(:query)')
                 ->orWhere('LOWER(p.personFullname) LIKE LOWER(:query)')
-                ->setParameter('query', '%' . $searchTerm . '%')
+                ->setParameter('query', '%' . $searchTerm . '%');
+            
+            // Check if user is authenticated
+            $user = $this->getUser();
+            if (!$user) {
+                // For non-authenticated users, show only demo user events (user_id = 1)
+                $queryBuilder->andWhere('u.id = :demoUserId')
+                    ->setParameter('demoUserId', 1);
+            } else {
+                // For authenticated users, show only their own events
+                $queryBuilder->andWhere('u.id = :userId')
+                    ->setParameter('userId', $user->getId());
+            }
+            
+            $events = $queryBuilder
                 ->orderBy('e.datetime', 'ASC')
                 ->getQuery()
                 ->getResult();
@@ -110,13 +138,24 @@ class EventController extends AbstractController
                     $startOfDay = $searchDate->setTime(0, 0, 0);
                     $endOfDay = $searchDate->setTime(23, 59, 59);
                     
-                    $dateEvents = $this->eventRepository->createQueryBuilder('e')
+                    $dateQueryBuilder = $this->eventRepository->createQueryBuilder('e')
                         ->leftJoin('e.user', 'u')
                         ->leftJoin('e.persons', 'p')
                         ->addSelect('u', 'p')
                         ->where('e.datetime BETWEEN :startDate AND :endDate')
                         ->setParameter('startDate', $startOfDay)
-                        ->setParameter('endDate', $endOfDay)
+                        ->setParameter('endDate', $endOfDay);
+                    
+                    // Apply user filtering for date search as well
+                    if (!$user) {
+                        $dateQueryBuilder->andWhere('u.id = :demoUserId')
+                            ->setParameter('demoUserId', 1);
+                    } else {
+                        $dateQueryBuilder->andWhere('u.id = :userId')
+                            ->setParameter('userId', $user->getId());
+                    }
+                    
+                    $dateEvents = $dateQueryBuilder
                         ->orderBy('e.datetime', 'ASC')
                         ->getQuery()
                         ->getResult();
@@ -477,13 +516,27 @@ class EventController extends AbstractController
             $endOfDay = $searchDate->setTime(23, 59, 59);
             
             // Find events within the date range
-            $events = $this->eventRepository->createQueryBuilder('e')
+            $queryBuilder = $this->eventRepository->createQueryBuilder('e')
                 ->leftJoin('e.user', 'u')
                 ->leftJoin('e.persons', 'p')
                 ->addSelect('u', 'p')
                 ->andWhere('e.datetime BETWEEN :startDate AND :endDate')
                 ->setParameter('startDate', $startOfDay)
-                ->setParameter('endDate', $endOfDay)
+                ->setParameter('endDate', $endOfDay);
+            
+            // Check if user is authenticated
+            $user = $this->getUser();
+            if (!$user) {
+                // For non-authenticated users, show only demo user events (user_id = 1)
+                $queryBuilder->andWhere('u.id = :demoUserId')
+                    ->setParameter('demoUserId', 1);
+            } else {
+                // For authenticated users, show only their own events
+                $queryBuilder->andWhere('u.id = :userId')
+                    ->setParameter('userId', $user->getId());
+            }
+            
+            $events = $queryBuilder
                 ->orderBy('e.datetime', 'ASC')
                 ->getQuery()
                 ->getResult();
