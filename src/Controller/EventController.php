@@ -294,7 +294,16 @@ class EventController extends AbstractController
         $event->setTitle($data['title'] ?? '');
         $event->setDescription($data['description'] ?? null);
         $event->setLocation($data['location'] ?? null);
-        $event->setDatetime(new \DateTimeImmutable($data['datetime'] ?? 'now'));
+        
+        // Handle datetime with proper timezone conversion
+        $datetimeValue = $data['datetime'] ?? 'now';
+        if ($datetimeValue === 'now') {
+            $event->setDatetime(new \DateTimeImmutable());
+        } else {
+            // Parse the ISO datetime string and convert to UTC for storage
+            $datetime = new \DateTimeImmutable($datetimeValue);
+            $event->setDatetime($datetime);
+        }
 
         // Set user (you might want to get this from authentication)
         // For now, we'll assume user_id is provided in the request
@@ -362,7 +371,9 @@ class EventController extends AbstractController
             $event->setLocation($data['location']);
         }
         if (isset($data['datetime'])) {
-            $event->setDatetime(new \DateTimeImmutable($data['datetime']));
+            // Parse the ISO datetime string and convert to UTC for storage
+            $datetime = new \DateTimeImmutable($data['datetime']);
+            $event->setDatetime($datetime);
         }
 
         // Validate the updated event
