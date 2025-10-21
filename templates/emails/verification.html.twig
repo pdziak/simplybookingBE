@@ -88,38 +88,38 @@
 </head>
 <body>
     <div class="header">
-        <img src="{{ appUrl }}/images/logo-email.png" alt="Benefitowo Logo" class="logo-image">
-        <div class="logo">Benefitowo</div>
+        <img src="{{ appUrl }}/images/logo.png" alt="SimplyBooking.pl Logo" class="logo-image">
+        <div class="logo">SimplyBooking.pl</div>
     </div>
 
     <div class="content">
-        <h1>Witamy w Benefitowo!</h1>
+        <h1>Witamy w SimplyBooking!</h1>
         
         <p>Cześć{% if user.firstName %} {{ user.firstName }}{% endif %},</p>
         
-        <p>Dziękujemy za utworzenie konta w Benefitowo. Aby dokończyć rejestrację i rozpocząć korzystanie z naszej platformy, potwierdź swój adres email, klikając przycisk poniżej:</p>
+        <p>Dziękujemy za utworzenie konta w SimplyBooking.pl. Aby dokończyć rejestrację i rozpocząć korzystanie z naszej platformy, potwierdź swój adres email, klikając przycisk poniżej:</p>
         
         <div style="text-align: center;">
             <a href="{{ verificationUrl }}" class="button">Potwierdź adres email</a>
         </div>
         
         <p>Jeśli przycisk nie działa, możesz również skopiować i wkleić ten link do przeglądarki:</p>
-        <p style="word-break: break-all; background-color: #f0f0f0; padding: 10px; border-radius: 3px;">
-            <a href="{{ verificationUrl }}" style="color: #000 !important; text-decoration: underline;">{{ verificationUrl }}</a>
+        <p style="word-break: break-all; background-color: #1779ff; padding: 10px; border-radius: 3px;">
+            <a href="{{ verificationUrl }}" style="color: #fff !important; text-decoration: none;">{{ verificationUrl }}</a>
         </p>
         
         <div class="warning">
             <strong>Ważne:</strong> Ten link weryfikacyjny wygaśnie {{ expiresAt.format('j F Y \o g:i') }}. Jeśli nie potwierdzisz swojego emaila w tym czasie, będziesz musiał poprosić o nowy email weryfikacyjny.
         </div>
         
-        <p>Jeśli nie utworzyłeś konta w Benefitowo, zignoruj ten email.</p>
+        <p>Jeśli nie utworzyłeś konta w SimplyBooking.pl, zignoruj ten email.</p>
         
-        <p>Pozdrawiamy,<br>Zespół Benefitowo</p>
+        <p>Pozdrawiamy,<br>Zespół SimplyBooking.pl</p>
     </div>
 
     <div class="footer">
         <p>Ten email został wysłany na adres {{ user.email }}. Jeśli masz pytania, skontaktuj się z naszym zespołem wsparcia.</p>
-        <p>&copy; {{ "now"|date("Y") }} Benefitowo. Wszystkie prawa zastrzeżone.</p>
+        <p>&copy; {{ "now"|date("Y") }} SimplyBooking.pl. Wszystkie prawa zastrzeżone.</p>
     </div>
 </body>
 </html>
