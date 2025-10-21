@@ -115,7 +115,8 @@ class OAuthController extends AbstractController
                     $user->setRoles(['ROLE_USER']);
                     // Verify email for OAuth users since Google has already verified it
                     $user->setEmailVerifiedAt(new \DateTimeImmutable());
-                    // No password needed for OAuth users
+                    // Set a placeholder password for OAuth users (they can't use it to login)
+                    $user->setPassword('OAUTH_USER_NO_PASSWORD');
                     
                     $this->entityManager->persist($user);
                     error_log('OAuth: Creating new user (no existing user found)');
@@ -149,6 +150,10 @@ class OAuthController extends AbstractController
                     $user->setGoogleId($googleId);
                     if ($user->getEmailVerifiedAt() === null) {
                         $user->setEmailVerifiedAt(new \DateTimeImmutable());
+                    }
+                    // Ensure password is set for OAuth users
+                    if ($user->getPassword() === null) {
+                        $user->setPassword('OAUTH_USER_NO_PASSWORD');
                     }
                     $this->entityManager->flush();
                     error_log('OAuth: Successfully linked existing user after constraint violation - ID: ' . $user->getId());
