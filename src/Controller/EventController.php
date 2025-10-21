@@ -290,6 +290,7 @@ class EventController extends AbstractController
             ], Response::HTTP_BAD_REQUEST);
         }
 
+
         $event = new Event();
         $event->setTitle($data['title'] ?? '');
         $event->setDescription($data['description'] ?? null);
@@ -334,6 +335,24 @@ class EventController extends AbstractController
 
         $this->entityManager->persist($event);
         $this->entityManager->flush();
+
+        // Handle osoby (persons) data
+        if (isset($data['osoby']) && is_array($data['osoby'])) {
+            foreach ($data['osoby'] as $osoba) {
+                if (isset($osoba['name']) && !empty(trim($osoba['name']))) {
+                    $eventPerson = new EventPerson();
+                    $eventPerson->setEvent($event);
+                    $eventPerson->setPersonFullname(trim($osoba['name']));
+                    
+                    // Validate the event person
+                    $errors = $this->validator->validate($eventPerson);
+                    if (count($errors) === 0) {
+                        $this->entityManager->persist($eventPerson);
+                    }
+                }
+            }
+            $this->entityManager->flush();
+        }
 
         return $this->json([
             'success' => true,
@@ -394,6 +413,29 @@ class EventController extends AbstractController
                 'message' => 'Validation failed',
                 'errors' => $errorMessages
             ], Response::HTTP_BAD_REQUEST);
+        }
+
+        // Handle osoby (persons) data update
+        if (isset($data['osoby']) && is_array($data['osoby'])) {
+            // Remove existing persons for this event
+            foreach ($event->getPersons() as $person) {
+                $this->entityManager->remove($person);
+            }
+            
+            // Add new persons
+            foreach ($data['osoby'] as $osoba) {
+                if (isset($osoba['name']) && !empty(trim($osoba['name']))) {
+                    $eventPerson = new EventPerson();
+                    $eventPerson->setEvent($event);
+                    $eventPerson->setPersonFullname(trim($osoba['name']));
+                    
+                    // Validate the event person
+                    $errors = $this->validator->validate($eventPerson);
+                    if (count($errors) === 0) {
+                        $this->entityManager->persist($eventPerson);
+                    }
+                }
+            }
         }
 
         $this->entityManager->flush();
