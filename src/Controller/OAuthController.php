@@ -180,15 +180,28 @@ class OAuthController extends AbstractController
             // Get the frontend URL from state or use default
             $frontendUrl = $redirectUrl ?? ($_ENV['APP_URL'] ?? 'https://simplybooking.pl');
             
-            // Create the redirect URL with token and user data as URL parameters
-            $finalRedirectUrl = $frontendUrl . '/auth/google/callback?' . http_build_query([
-                'token' => $token,
-                'user' => json_encode($userData),
-                'success' => 'true'
-            ]);
+            // Set the auth token cookie for cross-subdomain access
+            $response = $this->redirect($frontendUrl . '/auth/google/callback?success=true');
             
-            // Redirect to frontend with token
-            return $this->redirect($finalRedirectUrl);
+            // Set secure cookie with proper attributes
+            $response->headers->setCookie(
+                new \Symfony\Component\HttpFoundation\Cookie(
+                    'auth_token',
+                    $token,
+                    time() + (30 * 24 * 60 * 60), // 30 days
+                    '/', // path
+                    null, // domain (let browser handle subdomain sharing)
+                    true, // secure (HTTPS only)
+                    true, // httpOnly (prevent XSS)
+                    false, // raw
+                    'lax' // sameSite
+                )
+            );
+            
+            // Also pass user data as URL parameter for frontend processing
+            $response->headers->set('X-User-Data', json_encode($userData));
+            
+            return $response;
             
         } catch (\Exception $e) {
             // Log the error for debugging
