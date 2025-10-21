@@ -49,7 +49,7 @@ class EmailVerificationService
             $email = (new Email())
                 ->from('noreply@simplybooking.com')
                 ->to($user->getEmail())
-                ->subject('Potwierdź swój adres email - Benefitowo')
+                ->subject('Potwierdź swój adres email - SimplyBooking.pl')
                 ->html($this->twig->render('emails/verification.html.twig', [
                     'user' => $user,
                     'verificationUrl' => $verificationUrl,
