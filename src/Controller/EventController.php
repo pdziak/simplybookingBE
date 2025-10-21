@@ -14,7 +14,7 @@ use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Serializer\SerializerInterface;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 
-#[Route('/api/events', name: 'api_events_')]
+#[Route('/events', name: 'api_events_')]
 class EventController extends AbstractController
 {
     public function __construct(
@@ -335,10 +335,20 @@ class EventController extends AbstractController
         ], Response::HTTP_OK);
     }
 
-    #[Route('/search/date/{date}', name: 'search_by_date', methods: ['GET'])]
-    public function searchByDate(string $date): JsonResponse
+    #[Route('/search/date', name: 'search_by_date', methods: ['GET'])]
+    public function searchByDate(Request $request): JsonResponse
     {
         try {
+            // Get date from query parameter
+            $date = $request->query->get('date');
+            
+            if (!$date) {
+                return $this->json([
+                    'success' => false,
+                    'message' => 'Date parameter is required. Use ?date=YYYY-MM-DD or ?date=YYYY-MM-DD HH:MM:SS'
+                ], Response::HTTP_BAD_REQUEST);
+            }
+            
             // Parse the date string (supports both YYYY-MM-DD and YYYY-MM-DD HH:MM:SS formats)
             $searchDate = new \DateTimeImmutable($date);
             
