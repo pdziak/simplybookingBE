@@ -334,4 +334,80 @@ class EventController extends AbstractController
             'message' => 'Person removed from event successfully'
         ], Response::HTTP_OK);
     }
+
+    #[Route('/search/date/{date}', name: 'search_by_date', methods: ['GET'])]
+    public function searchByDate(string $date): JsonResponse
+    {
+        try {
+            // Parse the date string (supports both YYYY-MM-DD and YYYY-MM-DD HH:MM:SS formats)
+            $searchDate = new \DateTimeImmutable($date);
+            
+            // Extract only the date part (ignore time)
+            $dateOnly = $searchDate->format('Y-m-d');
+            $searchDate = new \DateTimeImmutable($dateOnly);
+            
+            // Create start and end of day for the search date
+            $startOfDay = $searchDate->setTime(0, 0, 0);
+            $endOfDay = $searchDate->setTime(23, 59, 59);
+            
+            // Find events within the date range
+            $events = $this->eventRepository->createQueryBuilder('e')
+                ->leftJoin('e.user', 'u')
+                ->leftJoin('e.persons', 'p')
+                ->addSelect('u', 'p')
+                ->andWhere('e.datetime BETWEEN :startDate AND :endDate')
+                ->setParameter('startDate', $startOfDay)
+                ->setParameter('endDate', $endOfDay)
+                ->orderBy('e.datetime', 'ASC')
+                ->getQuery()
+                ->getResult();
+            
+            // Clean up the events data to handle empty arrays
+            $cleanedEvents = array_map(function($event) {
+                // Filter out empty persons
+                $persons = $event->getPersons()->filter(function($person) {
+                    return $person->getPersonFullname() && trim($person->getPersonFullname()) !== '';
+                })->toArray();
+                
+                // Create a clean event object
+                return [
+                    'id' => $event->getId(),
+                    'title' => $event->getTitle(),
+                    'description' => $event->getDescription(),
+                    'location' => $event->getLocation(),
+                    'datetime' => $event->getDatetime()->format('c'),
+                    'createdAt' => $event->getCreatedAt()->format('c'),
+                    'updatedAt' => $event->getUpdatedAt() ? $event->getUpdatedAt()->format('c') : null,
+                    'user' => $event->getUser() ? [
+                        'id' => $event->getUser()->getId(),
+                        'email' => $event->getUser()->getEmail(),
+                        'name' => $event->getUser()->getFullName()
+                    ] : null,
+                    'persons' => array_map(function($person) {
+                        return [
+                            'id' => $person->getId(),
+                            'person_fullname' => $person->getPersonFullname()
+                        ];
+                    }, $persons)
+                ];
+            }, $events);
+            
+            return $this->json([
+                'success' => true,
+                'data' => $cleanedEvents,
+                'count' => count($cleanedEvents),
+                'search_date' => $date,
+                'message' => count($cleanedEvents) > 0 
+                    ? 'Events found for the specified date' 
+                    : 'No events found for the specified date'
+            ], Response::HTTP_OK);
+            
+        } catch (\Exception $e) {
+            return $this->json([
+                'success' => false,
+                'message' => 'Invalid date format. Please use YYYY-MM-DD or YYYY-MM-DD HH:MM:SS format (e.g., 2025-10-23 or 2025-10-21 12:12:21)',
+                'error' => $e->getMessage()
+            ], Response::HTTP_BAD_REQUEST);
+        }
+    }
 }
