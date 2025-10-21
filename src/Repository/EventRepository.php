@@ -70,12 +70,12 @@ class EventRepository extends ServiceEntityRepository
     }
 
     /**
-     * Search events by title or description
+     * Search events by title or description (case insensitive)
      */
     public function search(string $query): array
     {
         return $this->createQueryBuilder('e')
-            ->andWhere('e.title LIKE :query OR e.description LIKE :query')
+            ->andWhere('LOWER(e.title) LIKE LOWER(:query) OR LOWER(e.description) LIKE LOWER(:query)')
             ->setParameter('query', '%' . $query . '%')
             ->orderBy('e.datetime', 'ASC')
             ->getQuery()
