@@ -82,3 +82,4 @@ class EventRepository extends ServiceEntityRepository
             ->getResult();
     }
 }
+
