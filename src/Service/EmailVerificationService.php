@@ -22,36 +22,49 @@ class EmailVerificationService
 
     public function sendVerificationEmail(User $user): void
     {
-        // Generate verification token only if one doesn't exist
-        if (!$user->getEmailVerificationToken()) {
-            $token = bin2hex(random_bytes(32));
-            $expiresAt = new \DateTimeImmutable('+24 hours');
+        try {
+            // Generate verification token only if one doesn't exist
+            if (!$user->getEmailVerificationToken()) {
+                $token = bin2hex(random_bytes(32));
+                $expiresAt = new \DateTimeImmutable('+24 hours');
+                
+                // Store token in user entity
+                $user->setEmailVerificationToken($token);
+                $user->setEmailVerificationTokenExpiresAt($expiresAt);
+
+                // Persist the changes to ensure the token is saved
+                $this->entityManager->persist($user);
+                $this->entityManager->flush();
+            }
+
+            // Generate verification URL - point to frontend verification page
+            $verificationUrl = $this->appUrl . '/verify-email?token=' . $user->getEmailVerificationToken();
+
+            // Log email sending attempt
+            error_log('Attempting to send verification email to: ' . $user->getEmail());
+            error_log('Verification URL: ' . $verificationUrl);
+            error_log('App URL: ' . $this->appUrl);
+
+            // Create email
+            $email = (new Email())
+                ->from('noreply@simplybooking.com')
+                ->to($user->getEmail())
+                ->subject('Potwierdź swój adres email - Benefitowo')
+                ->html($this->twig->render('emails/verification.html.twig', [
+                    'user' => $user,
+                    'verificationUrl' => $verificationUrl,
+                    'expiresAt' => $user->getEmailVerificationTokenExpiresAt(),
+                    'appUrl' => $this->appUrl
+                ]));
+
+            $this->mailer->send($email);
+            error_log('Verification email sent successfully to: ' . $user->getEmail());
             
-            // Store token in user entity
-            $user->setEmailVerificationToken($token);
-            $user->setEmailVerificationTokenExpiresAt($expiresAt);
-
-            // Persist the changes to ensure the token is saved
-            $this->entityManager->persist($user);
-            $this->entityManager->flush();
+        } catch (\Exception $e) {
+            error_log('Failed to send verification email to ' . $user->getEmail() . ': ' . $e->getMessage());
+            error_log('Email error details: ' . $e->getTraceAsString());
+            throw $e; // Re-throw to be handled by the controller
         }
-
-        // Generate verification URL - point to frontend verification page
-        $verificationUrl = $this->appUrl . '/verify-email?token=' . $user->getEmailVerificationToken();
-
-        // Create email
-        $email = (new Email())
-            ->from('noreply@simplybooking.com')
-            ->to($user->getEmail())
-            ->subject('Potwierdź swój adres email - Benefitowo')
-            ->html($this->twig->render('emails/verification.html.twig', [
-                'user' => $user,
-                'verificationUrl' => $verificationUrl,
-                'expiresAt' => $user->getEmailVerificationTokenExpiresAt(),
-                'appUrl' => $this->appUrl
-            ]));
-
-        $this->mailer->send($email);
     }
 
     public function verifyEmail(string $token): ?User
