@@ -301,14 +301,11 @@ class EventController extends AbstractController
         
         if ($datetimeValue === 'now') {
             $event->setDatetime(new \DateTimeImmutable());
-            $event->setTimezone('Europe/Warsaw');
         } else {
             // Parse the datetime string with the provided timezone
+            // The datetimetz_immutable type will store the timezone information
             $datetime = new \DateTimeImmutable($datetimeValue, new \DateTimeZone($timezoneValue));
-            // Store in UTC but keep timezone info
-            $datetime = $datetime->setTimezone(new \DateTimeZone('UTC'));
             $event->setDatetime($datetime);
-            $event->setTimezone($timezoneValue);
         }
 
         // Set user (you might want to get this from authentication)
@@ -379,11 +376,9 @@ class EventController extends AbstractController
         if (isset($data['datetime'])) {
             $timezoneValue = $data['timezone'] ?? 'Europe/Warsaw';
             // Parse the datetime string with the provided timezone
+            // The datetimetz_immutable type will store the timezone information
             $datetime = new \DateTimeImmutable($data['datetime'], new \DateTimeZone($timezoneValue));
-            // Store in UTC but keep timezone info
-            $datetime = $datetime->setTimezone(new \DateTimeZone('UTC'));
             $event->setDatetime($datetime);
-            $event->setTimezone($timezoneValue);
         }
 
         // Validate the updated event

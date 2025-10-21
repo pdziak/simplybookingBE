@@ -37,15 +37,10 @@ class Event
     #[Groups(['event:read'])]
     private User $user;
 
-    #[ORM\Column(type: 'datetime_immutable')]
+    #[ORM\Column(type: 'datetimetz_immutable')]
     #[Assert\NotBlank(message: 'Event datetime is required')]
     #[Groups(['event:read', 'event:write'])]
     private \DateTimeImmutable $datetime;
-
-    #[ORM\Column(type: 'string', length: 50)]
-    #[Assert\NotBlank(message: 'Event timezone is required')]
-    #[Groups(['event:read', 'event:write'])]
-    private string $timezone;
 
     #[ORM\Column(type: 'datetime_immutable')]
     #[Groups(['event:read'])]
@@ -135,18 +130,6 @@ class Event
         return $this;
     }
 
-    public function getTimezone(): string
-    {
-        return $this->timezone;
-    }
-
-    public function setTimezone(string $timezone): static
-    {
-        $this->timezone = $timezone;
-        $this->updatedAt = new \DateTimeImmutable();
-
-        return $this;
-    }
 
     public function getCreatedAt(): \DateTimeImmutable
     {
