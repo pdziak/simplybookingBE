@@ -295,14 +295,20 @@ class EventController extends AbstractController
         $event->setDescription($data['description'] ?? null);
         $event->setLocation($data['location'] ?? null);
         
-        // Handle datetime with proper timezone conversion
+        // Handle datetime with timezone information
         $datetimeValue = $data['datetime'] ?? 'now';
+        $timezoneValue = $data['timezone'] ?? 'Europe/Warsaw';
+        
         if ($datetimeValue === 'now') {
             $event->setDatetime(new \DateTimeImmutable());
+            $event->setTimezone('Europe/Warsaw');
         } else {
-            // Parse the ISO datetime string and convert to UTC for storage
-            $datetime = new \DateTimeImmutable($datetimeValue);
+            // Parse the datetime string with the provided timezone
+            $datetime = new \DateTimeImmutable($datetimeValue, new \DateTimeZone($timezoneValue));
+            // Store in UTC but keep timezone info
+            $datetime = $datetime->setTimezone(new \DateTimeZone('UTC'));
             $event->setDatetime($datetime);
+            $event->setTimezone($timezoneValue);
         }
 
         // Set user (you might want to get this from authentication)
@@ -371,9 +377,13 @@ class EventController extends AbstractController
             $event->setLocation($data['location']);
         }
         if (isset($data['datetime'])) {
-            // Parse the ISO datetime string and convert to UTC for storage
-            $datetime = new \DateTimeImmutable($data['datetime']);
+            $timezoneValue = $data['timezone'] ?? 'Europe/Warsaw';
+            // Parse the datetime string with the provided timezone
+            $datetime = new \DateTimeImmutable($data['datetime'], new \DateTimeZone($timezoneValue));
+            // Store in UTC but keep timezone info
+            $datetime = $datetime->setTimezone(new \DateTimeZone('UTC'));
             $event->setDatetime($datetime);
+            $event->setTimezone($timezoneValue);
         }
 
         // Validate the updated event
