@@ -99,7 +99,11 @@ class EventController extends AbstractController
             $date = $request->query->get('date');
             
             // Validate that at least one parameter is provided
-            if ((!$query || trim($query) === '') && !$date) {
+            // Allow date-only searches (q parameter is optional when date is provided)
+            $hasQuery = $query && trim($query) !== '';
+            $hasDate = $date && trim($date) !== '';
+            
+            if (!$hasQuery && !$hasDate) {
                 return $this->json([
                     'success' => false,
                     'message' => 'At least one search parameter is required: "q" for text search or "date" for date search'
@@ -110,7 +114,7 @@ class EventController extends AbstractController
             $allEvents = [];
             
             // Text search
-            if ($query && trim($query) !== '') {
+            if ($hasQuery) {
                 $searchTerm = trim($query);
                 
                 // Find events that match the search criteria (case insensitive)
@@ -149,7 +153,7 @@ class EventController extends AbstractController
             }
             
             // Date search
-            if ($date) {
+            if ($hasDate) {
                 try {
                     // Parse the date string (supports both YYYY-MM-DD and YYYY-MM-DD HH:MM:SS formats)
                     $searchDate = new \DateTimeImmutable($date);
@@ -212,7 +216,7 @@ class EventController extends AbstractController
             }
             
             // Remove duplicates if both text and date search were performed
-            if ($query && $date) {
+            if ($hasQuery && $hasDate) {
                 $uniqueEvents = [];
                 $seenIds = [];
                 
