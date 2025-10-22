@@ -44,6 +44,10 @@ class EventController extends AbstractController
                 ->setParameter('userId', $user->getId());
         }
         
+        // Exclude hidden events by default
+        $queryBuilder->andWhere('e.isHidden = :isHidden')
+            ->setParameter('isHidden', false);
+        
         $events = $queryBuilder
             ->orderBy('e.datetime', 'ASC')
             ->getQuery()
@@ -132,6 +136,10 @@ class EventController extends AbstractController
                         ->setParameter('userId', $user->getId());
                 }
                 
+                // Exclude hidden events for text search
+                $queryBuilder->andWhere('e.isHidden = :isHidden')
+                    ->setParameter('isHidden', false);
+                
                 $textEvents = $queryBuilder
                     ->orderBy('e.datetime', 'ASC')
                     ->getQuery()
@@ -173,6 +181,19 @@ class EventController extends AbstractController
                         // For authenticated users, show only their own events
                         $dateQueryBuilder->andWhere('u.id = :userId')
                             ->setParameter('userId', $user->getId());
+                    }
+                    
+                    // Check if searching past dates - include hidden events for past dates
+                    $today = new \DateTimeImmutable();
+                    $todayStart = $today->setTime(0, 0, 0);
+                    
+                    if ($startOfDay < $todayStart) {
+                        // Searching past dates - include hidden events
+                        // No additional filter needed - show all events (hidden and visible)
+                    } else {
+                        // Searching current or future dates - exclude hidden events
+                        $dateQueryBuilder->andWhere('e.isHidden = :isHidden')
+                            ->setParameter('isHidden', false);
                     }
                     
                     $dateEvents = $dateQueryBuilder
@@ -594,6 +615,74 @@ class EventController extends AbstractController
         return $this->json([
             'success' => true,
             'message' => 'Person removed from event successfully'
+        ], Response::HTTP_OK);
+    }
+
+    #[Route('/{id}/hide', name: 'hide', methods: ['POST'])]
+    public function hideEvent(int $id): JsonResponse
+    {
+        $event = $this->eventRepository->find($id);
+        
+        if (!$event) {
+            return $this->json([
+                'success' => false,
+                'message' => 'Event not found'
+            ], Response::HTTP_NOT_FOUND);
+        }
+
+        // Check if user is authenticated and owns the event
+        $user = $this->getUser();
+        if (!$user || $event->getUser()->getId() !== $user->getId()) {
+            return $this->json([
+                'success' => false,
+                'message' => 'Unauthorized to hide this event'
+            ], Response::HTTP_FORBIDDEN);
+        }
+
+        $event->setIsHidden(true);
+        $this->entityManager->flush();
+
+        return $this->json([
+            'success' => true,
+            'message' => 'Event hidden successfully',
+            'data' => [
+                'id' => $event->getId(),
+                'isHidden' => $event->isHidden()
+            ]
+        ], Response::HTTP_OK);
+    }
+
+    #[Route('/{id}/show', name: 'show_event', methods: ['POST'])]
+    public function showEvent(int $id): JsonResponse
+    {
+        $event = $this->eventRepository->find($id);
+        
+        if (!$event) {
+            return $this->json([
+                'success' => false,
+                'message' => 'Event not found'
+            ], Response::HTTP_NOT_FOUND);
+        }
+
+        // Check if user is authenticated and owns the event
+        $user = $this->getUser();
+        if (!$user || $event->getUser()->getId() !== $user->getId()) {
+            return $this->json([
+                'success' => false,
+                'message' => 'Unauthorized to show this event'
+            ], Response::HTTP_FORBIDDEN);
+        }
+
+        $event->setIsHidden(false);
+        $this->entityManager->flush();
+
+        return $this->json([
+            'success' => true,
+            'message' => 'Event shown successfully',
+            'data' => [
+                'id' => $event->getId(),
+                'isHidden' => $event->isHidden()
+            ]
         ], Response::HTTP_OK);
     }
 

@@ -54,6 +54,10 @@ class Event
     #[Groups(['event:read'])]
     private $persons;
 
+    #[ORM\Column(type: 'boolean')]
+    #[Groups(['event:read', 'event:write'])]
+    private bool $isHidden = false;
+
     public function __construct()
     {
         $this->createdAt = new \DateTimeImmutable();
@@ -181,6 +185,19 @@ class Event
                 $person->setEvent(null);
             }
         }
+
+        return $this;
+    }
+
+    public function isHidden(): bool
+    {
+        return $this->isHidden;
+    }
+
+    public function setIsHidden(bool $isHidden): static
+    {
+        $this->isHidden = $isHidden;
+        $this->updatedAt = new \DateTimeImmutable();
 
         return $this;
     }
